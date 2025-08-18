@@ -1,0 +1,353 @@
+{
+  "name": "DB",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Add documents",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "File",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        512
+      ],
+      "id": "8154b1a0-2e24-4607-9722-b74cf4e191a0",
+      "name": "On form submission",
+      "webhookId": "aa678fbb-c6e7-435b-a7b5-44634c236885"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        512
+      ],
+      "id": "1f7ec583-2d4a-42ea-8298-910993f3991e",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "i3pABI5N5wJaCI4S",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        736
+      ],
+      "id": "75a4914c-bb75-495e-855b-ff182be45436",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        736
+      ],
+      "id": "c92095eb-1ea8-4ff9-b505-4c819e0f2feb",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=leggi la domanda {{ $json.chatInput }}, consulti il Vector Store e rispondi a domande sulle Norme Tecniche del Piano Operativo del comune di Magliano in toscana\n\nSei un assistente AI esperto delle Norme Tecniche del Piano Operativo del comune di Magliano in Toscana. Rispondi in modo conciso e pertinente, utilizzando le informazioni fornite dal tuo strumento Vector Store. Al termine della tua risposta, formattala ESATTAMENTE come segue:\n\n## Domanda dell'Utente\n{{ $json.chatInput }}\n\n## Risposta dell'agente AI\n[Qui andrà la risposta generata dall'agente AI, basata sulla domanda e sulle informazioni recuperate.]",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        -240
+      ],
+      "id": "3beaf037-4e77-418d-9bc3-2b333aef1a35",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        -32
+      ],
+      "id": "cbcdc2ef-62d0-4e77-ba67-bac1e9594db8",
+      "name": "When chat message received",
+      "webhookId": "dbce25e7-cc38-4e88-a6d8-6a8e9230c051"
+    },
+    {
+      "parameters": {
+        "model": "mistral-small:24b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -16
+      ],
+      "id": "dd8b111a-94fa-493f-a180-dffd9c04fbdd",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        208
+      ],
+      "id": "cb20d0a1-5e62-486f-8866-367f96114b98",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "=fai ricerche su {{ $('When chat message received').item.json.chatInput }}",
+        "includeDocumentMetadata": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        48
+      ],
+      "id": "d96e1e3c-090b-4523-8677-97f50c5445c0",
+      "name": "Vector Store",
+      "credentials": {
+        "postgres": {
+          "id": "i3pABI5N5wJaCI4S",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Leggi sia la domanda che la risposta dal nodo precedente.\nconst questionText = items[0]?.json?.domanda;\nconst answerText = items[0]?.json?.risposta;\n\n// Aggiungi un controllo di sicurezza per entrambi i campi.\nif (!questionText || !answerText) {\n  return [{\n    json: {\n      error: 'I campi \"domanda\" o \"risposta\" non sono presenti o sono vuoti nei dati del nodo precedente.'\n    }\n  }];\n}\n\n// Funzione che formatta un singolo blocco di testo in HTML.\nfunction formatTextToHtml(text) {\n  let formattedText = text;\n\n  // Sostituisce i titoli di livello 2 (es. \"## Titolo\") con tag H2.\n  formattedText = formattedText.replace(/##\\s*(.*)/g, '<h2>$1</h2>');\n\n  // Sostituisce i titoli di livello 3 (es. \"### Titolo\") con tag H3.\n  formattedText = formattedText.replace(/###\\s*(.*)/g, '<h3>$1</h3>');\n\n  // Sostituisce gli elenchi puntati con tag <ul> e <li>.\n  formattedText = formattedText.replace(/^\\*\\s*(.*)/gm, '<li>$1</li>');\n  formattedText = formattedText.replace(/(<li>.*<\\/li>)/s, '<ul>$1</ul>');\n\n  // Aggiunge tag di grassetto per i termini importanti.\n  formattedText = formattedText.replace(/\\*\\*(.*?)\\*\\*/g, '<b>$1</b>');\n  \n  // Sostituisce i doppi a capo con paragrafi per il resto del testo.\n  formattedText = formattedText.replace(/\\n\\n/g, '</p><p>');\n\n  return `<p>${formattedText}</p>`;\n}\n\n// Applica la formattazione sia alla domanda che alla risposta.\nconst formattedQuestion = formatTextToHtml(questionText);\nconst formattedAnswer = formatTextToHtml(answerText);\n\n// Combina i due blocchi formattati in un'unica stringa HTML completa.\nconst finalHtmlOutput = `\n  <!DOCTYPE html>\n  <html>\n  <body>\n    ${formattedQuestion}\n    ${formattedAnswer}\n  </body>\n  </html>\n`;\n\n// Restituisci l'output finale.\nreturn [{\n  json: {\n    formattedHtml: finalHtmlOutput\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -32
+      ],
+      "id": "cb034db7-246e-49c2-b75c-f9934a83bb2a",
+      "name": "Formattazione1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "magliano.settoretecnico@gmail.com",
+        "subject": "Risposta agente AI - Domanda edilizia",
+        "html": "={{ $json.formattedHtml }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        560,
+        -32
+      ],
+      "id": "9fe0cd9e-39ca-46a7-a8f1-7a7d0b9140d6",
+      "name": "email risposta",
+      "webhookId": "611734cd-ba60-4b56-92f8-98053c666a8c",
+      "credentials": {
+        "smtp": {
+          "id": "REwMrDeHhgcQLIT6",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Leggi il testo dal nodo precedente, assumendo che sia nel campo 'output'.\n// L'operatore '?' previene errori se il dato non è presente.\nconst fullText = items[0]?.json?.output;\n\n// Definisci i marcatori per separare domanda e risposta.\nconst questionMarker = \"## Domanda dell'Utente\";\nconst answerMarker = \"## Risposta dell'agente AI\";\n\nlet output = {};\n// Genera un ID univoco per la domanda/risposta\nconst uniqueId = Date.now();\n\nif (fullText) {\n  // Trova gli indici dei marcatori nel testo.\n  const questionStartIndex = fullText.indexOf(questionMarker);\n  const answerStartIndex = fullText.indexOf(answerMarker);\n\n  if (questionStartIndex !== -1 && answerStartIndex !== -1) {\n    // Estrai il testo della domanda.\n    const rawQuestion = fullText.substring(questionStartIndex, answerStartIndex);\n    \n    // Estrai il testo della risposta.\n    const rawAnswer = fullText.substring(answerStartIndex);\n\n    output = {\n      id: uniqueId,\n      domanda: rawQuestion.trim(),\n      risposta: rawAnswer.trim()\n    };\n  } else {\n    output = {\n      error: \"Impossibile trovare i marcatori di domanda e risposta nel testo. Controlla il formato del testo in ingresso.\"\n    };\n  }\n} else {\n  output = {\n    error: \"Il campo 'output' non contiene testo valido o non è presente.\"\n  };\n}\n\n// Restituisci l'oggetto JSON con la domanda e la risposta separate.\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -32
+      ],
+      "id": "7955c129-deea-4965-b34e-e39e21033b42",
+      "name": "Code1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formattazione1": {
+      "main": [
+        [
+          {
+            "node": "email risposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Formattazione1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "adcc8563-7c7c-4e31-825f-3bd1b8da966e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "3CnFbzsyMBx4RW82",
+  "tags": []
+}

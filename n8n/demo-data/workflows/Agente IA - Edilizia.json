@@ -1,0 +1,305 @@
+{
+  "name": "Agente IA - Edilizia",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Leggi sia la domanda che la risposta dal nodo precedente.\nconst questionText = items[0]?.json?.domanda;\nconst answerText = items[0]?.json?.risposta;\n\n// Aggiungi un controllo di sicurezza per entrambi i campi.\nif (!questionText || !answerText) {\n  return [{\n    json: {\n      error: 'I campi \"domanda\" o \"risposta\" non sono presenti o sono vuoti nei dati del nodo precedente.'\n    }\n  }];\n}\n\n// Funzione che formatta un singolo blocco di testo in HTML.\nfunction formatTextToHtml(text) {\n  let formattedText = text;\n\n  // Sostituisce i titoli di livello 2 (es. \"## Titolo\") con tag H2.\n  formattedText = formattedText.replace(/##\\s*(.*)/g, '<h2>$1</h2>');\n\n  // Sostituisce i titoli di livello 3 (es. \"### Titolo\") con tag H3.\n  formattedText = formattedText.replace(/###\\s*(.*)/g, '<h3>$1</h3>');\n\n  // Sostituisce gli elenchi puntati con tag <ul> e <li>.\n  formattedText = formattedText.replace(/^\\*\\s*(.*)/gm, '<li>$1</li>');\n  formattedText = formattedText.replace(/(<li>.*<\\/li>)/s, '<ul>$1</ul>');\n\n  // Aggiunge tag di grassetto per i termini importanti.\n  formattedText = formattedText.replace(/\\*\\*(.*?)\\*\\*/g, '<b>$1</b>');\n  \n  // Sostituisce i doppi a capo con paragrafi per il resto del testo.\n  formattedText = formattedText.replace(/\\n\\n/g, '</p><p>');\n\n  return `<p>${formattedText}</p>`;\n}\n\n// Applica la formattazione sia alla domanda che alla risposta.\nconst formattedQuestion = formatTextToHtml(questionText);\nconst formattedAnswer = formatTextToHtml(answerText);\n\n// Combina i due blocchi formattati in un'unica stringa HTML completa.\nconst finalHtmlOutput = `\n  <!DOCTYPE html>\n  <html>\n  <body>\n    ${formattedQuestion}\n    ${formattedAnswer}\n  </body>\n  </html>\n`;\n\n// Restituisci l'output finale.\nreturn [{\n  json: {\n    formattedHtml: finalHtmlOutput\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        256
+      ],
+      "id": "ff86c4fb-5be9-487c-984a-d15b79ee40fa",
+      "name": "Formattazione1"
+    },
+    {
+      "parameters": {
+        "model": "mistral-small:24b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        320
+      ],
+      "id": "3dfdb8b8-7147-4566-aa76-21b07bae1e8b",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "magliano.settoretecnico@gmail.com",
+        "subject": "Risposta agente AI - Domanda edilizia",
+        "html": "={{ $json.formattedHtml }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        96
+      ],
+      "id": "6e71c781-9b2d-49b1-95f7-4865dffaf3c1",
+      "name": "email risposta",
+      "webhookId": "611734cd-ba60-4b56-92f8-98053c666a8c",
+      "credentials": {
+        "smtp": {
+          "id": "REwMrDeHhgcQLIT6",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un esperto di edilizia del comune di Magliano in Toscana. Leggi la domanda {{ $json.textHtml }}. Rispondi in modo estremamente elaborato, come di seguito descritto, mantenendo SEMPRE QUESTA STRUTTURA:\n\n## Domanda dell'Utente (chiarischi la domanda senza riassumerla)\n\n## Risposta dell'agente AI\n### Inquadramento urbanistico e edilizio dell'intervento\n\n### Inquadramento dal Punto di Vista Vincolistico (Paesaggistico ed Idrogeologico)\n\n## Conclusioni (Titoli Edilizi e Autorizzazioni Necessarie)\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        96
+      ],
+      "id": "7b5dd85c-65c3-4e77-b50e-07e44733e4f6",
+      "name": "Risposte1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Leggi il testo dal nodo precedente, assumendo che sia nel campo 'output'.\nconst fullText = items[0]?.json?.output;\n\n// Definisci i marcatori per separare domanda e risposta.\nconst questionMarker = \"## Domanda dell'Utente\";\nconst answerMarker = \"## Risposta dell'agente AI\";\n\nlet output = {};\n\nif (fullText) {\n  // Trova gli indici dei marcatori nel testo.\n  const questionStartIndex = fullText.indexOf(questionMarker);\n  const answerStartIndex = fullText.indexOf(answerMarker);\n\n  if (questionStartIndex !== -1 && answerStartIndex !== -1) {\n    // Estrai il testo della domanda e rimuovi il marcatore.\n    const rawQuestion = fullText.substring(questionStartIndex + questionMarker.length, answerStartIndex).trim();\n\n    // Estrai il testo della risposta e rimuovi il marcatore.\n    const rawAnswer = fullText.substring(answerStartIndex + answerMarker.length).trim();\n\n    // Genera un ID univoco dal timestamp.\n    const uniqueId = Date.now();\n\n    output = {\n      id: uniqueId, \n      domanda: rawQuestion,\n      risposta: rawAnswer\n    };\n  } else {\n    output = {\n      error: \"Impossibile trovare i marcatori di domanda e risposta nel testo. Controlla il formato del testo in ingresso.\"\n    };\n  }\n} else {\n  output = {\n    error: \"Il campo 'output' non contiene testo valido o non è presente.\"\n  };\n}\n\n// Restituisci l'oggetto JSON con la domanda e la risposta pulite.\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        96
+      ],
+      "id": "e68fa4b9-29b3-43ca-9d21-7af421ec8740",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        -752,
+        96
+      ],
+      "id": "6990ea38-fc46-4bb0-8d64-c42c31b98d03",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "n87IbCW493O8Enyy",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "52d66140-a4a6-4661-bb9f-1ad19d3488c1",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Domanda agente AI - Domanda edilizia",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        96
+      ],
+      "id": "5d921a53-4d1a-4949-a731-03bff316fbbe",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "risposte_ia",
+          "mode": "list",
+          "cachedResultName": "risposte_ia"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "domande": "={{ $json.domanda }}",
+            "risposte": "={{ $json.risposta }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "domande",
+              "displayName": "domande",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "risposte",
+              "displayName": "risposte",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        320,
+        0
+      ],
+      "id": "7515d28d-80f1-43b8-a03d-93646d8cb8ba",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "i3pABI5N5wJaCI4S",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Formattazione1": {
+      "main": [
+        [
+          {
+            "node": "email risposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Risposte1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risposte1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Formattazione1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Risposte1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "39689726-2638-4346-89b1-2c2171d8830b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "rlBYObExBrQxvQ3B",
+  "tags": []
+}

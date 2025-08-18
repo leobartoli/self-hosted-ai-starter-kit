@@ -1,0 +1,253 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "file",
+        "formDescription": "file",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "file",
+              "fieldType": "file",
+              "acceptFileTypes": ".csv"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        -688
+      ],
+      "id": "a57763f3-911d-40a8-a94c-d9ed06b3196e",
+      "name": "On form submission",
+      "webhookId": "49ddec8b-deb0-4f82-879b-d474decc569b"
+    },
+    {
+      "parameters": {
+        "filePath": "={{ $json.file[0].filename }}",
+        "dataPropertyName": "file"
+      },
+      "id": "f34eb6a1-4c52-47f5-ad33-1d7b24f498da",
+      "name": "Read CSV File",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -736
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "delimiter": ",",
+          "headerRow": true
+        }
+      },
+      "id": "57ad221b-8f2a-45dd-a7e7-b7ad9e395f63",
+      "name": "Parse CSV Data",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pulisce e normalizza i dati CSV\nconst items = [];\n\nfor (const item of $input.all()) {\n  const data = item.json;\n  \n  // Pulisce i valori vuoti e normalizza i dati\n  const cleanedData = {\n    foglio: data.foglio ? data.foglio.toString().replace(/\"/g, '') : null,\n    mappale: data.mappale ? data.mappale.toString().replace(/\"/g, '') : null,\n    vincolo_archeologico: data.Vincolo_Archeologico && data.Vincolo_Archeologico.trim() !== '' ? data.Vincolo_Archeologico.trim() : null,\n    vincolo_boschi: data.Vincolo_Boschi && data.Vincolo_Boschi.trim() !== '' ? data.Vincolo_Boschi.trim() : null,\n    vincolo_costa: data.Vincolo_Costa && data.Vincolo_Costa.trim() !== '' ? data.Vincolo_Costa.trim() : null,\n    vincolo_fiumi: data.Vincolo_Fiumi && data.Vincolo_Fiumi.trim() !== '' ? data.Vincolo_Fiumi.trim() : null,\n    vincolo_laghi: data.Vincolo_Laghi && data.Vincolo_Laghi.trim() !== '' ? data.Vincolo_Laghi.trim() : null,\n    vincolo_parco_area_contigua: data.Vincolo_Parco_Area_Contigua && data.Vincolo_Parco_Area_Contigua.trim() !== '' ? data.Vincolo_Parco_Area_Contigua.trim() : null,\n    dm_colline_capitana: data['DM 13/2019 - Colline della Capitana'] && data['DM 13/2019 - Colline della Capitana'].trim() !== '' ? data['DM 13/2019 - Colline della Capitana'].trim() : null,\n    vincolo_dm_parco: data.Vincolo_DM_Parco && data.Vincolo_DM_Parco.trim() !== '' ? data.Vincolo_DM_Parco.trim() : null,\n    vincolo_dm_pereta: data.Vincolo_DM_Pereta && data.Vincolo_DM_Pereta.trim() !== '' ? data.Vincolo_DM_Pereta.trim() : null,\n    vincolo_dm_magliano: data.Vincolo_DM_Magliano && data.Vincolo_DM_Magliano.trim() !== '' ? data.Vincolo_DM_Magliano.trim() : null,\n    data_inserimento: new Date().toISOString(),\n    stato: 'attivo'\n  };\n  \n  // Salta le righe completamente vuote (eccetto foglio e mappale)\n  const hasData = Object.values(cleanedData).some(value => \n    value !== null && value !== undefined && value !== ''\n  );\n  \n  if (hasData && cleanedData.foglio && cleanedData.mappale) {\n    items.push({ json: cleanedData });\n  }\n}\n\nreturn items;"
+      },
+      "id": "51dd2dc0-ad76-4cad-acd7-511adfee737a",
+      "name": "Clean and Normalize Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -496
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "error-condition",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "23b2129c-96dc-4272-ae65-330265aaef33",
+      "name": "Check for Errors",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Conta il numero di record elaborati\nconst count = $input.all().length;\n\nreturn [{\n  json: {\n    count: count,\n    status: 'completed',\n    processed_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "f1dd4f66-afc1-4935-bc04-ee7d3c63ee3a",
+      "name": "Count Records",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list"
+        },
+        "table": {
+          "__rl": true,
+          "value": "vincoli_paesaggistici",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "foglio": "={{ $json.foglio }}",
+            "mappale": "={{ $json.mappale }}",
+            "vincolo_archeologico": "={{ $json.vincolo_archeologico }}",
+            "vincolo_boschi": "={{ $json.vincolo_boschi }}",
+            "vincolo_costa": "={{ $json.vincolo_costa }}",
+            "vincolo_fiumi": "={{ $json.vincolo_fiumi }}",
+            "vincolo_laghi": "={{ $json.vincolo_laghi }}",
+            "vincolo_parco_area_contigua": "={{ $json.vincolo_parco_area_contigua }}",
+            "dm_colline_capitana": "={{ $json.dm_colline_capitana }}",
+            "vincolo_dm_parco": "={{ $json.vincolo_dm_parco }}",
+            "vincolo_dm_pereta": "={{ $json.vincolo_dm_pereta }}",
+            "vincolo_dm_magliano": "={{ $json.vincolo_dm_magliano }}",
+            "data_inserimento": "={{ $json.data_inserimento }}",
+            "stato": "={{ $json.stato }}"
+          }
+        },
+        "options": {
+          "queryBatching": "transaction"
+        }
+      },
+      "id": "563f6786-b16b-4de3-8488-0ebecbe41050",
+      "name": "Insert into PostgreSQL1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        768,
+        -736
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "i3pABI5N5wJaCI4S",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Read CSV File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CSV File": {
+      "main": [
+        [
+          {
+            "node": "Parse CSV Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse CSV Data": {
+      "main": [
+        [
+          {
+            "node": "Clean and Normalize Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean and Normalize Data": {
+      "main": [
+        [
+          {
+            "node": "Insert into PostgreSQL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Errors": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "Count Records": {
+      "main": [
+        []
+      ]
+    },
+    "Insert into PostgreSQL1": {
+      "main": [
+        [
+          {
+            "node": "Check for Errors",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Count Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "52de4d8f-d4d8-4e72-b6f1-c5c0026e9cda",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "Q4keDv806OqfrM5V",
+  "tags": []
+}

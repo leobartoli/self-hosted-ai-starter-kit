@@ -1,0 +1,122 @@
+{
+  "name": "Domande edilizia",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        96
+      ],
+      "id": "536e068e-b3d4-43d2-a0d9-e236071b5278",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "model": "mistral-small:24b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        64,
+        320
+      ],
+      "id": "7b999dd6-e6a4-461f-91bc-e6ee2970a277",
+      "name": "Ollama Chat Model9",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un proprietario di immobili all'interno del comune di Magliano in Toscana. Descrivi un intervento edilizio che intenderesti realizzare e richiedi quali titoli edilizi e autorizzazioni sarebbe necessario conseguire per poter procedere.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        96
+      ],
+      "id": "edd56438-9d07-4868-9e2d-c4375e60ce2c",
+      "name": "Domande1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "magliano.settoretecnico@gmail.com",
+        "subject": "Domanda agente AI - Domanda edilizia",
+        "html": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        96
+      ],
+      "id": "2acead25-03b9-437d-bfb2-0f5d94e26a5b",
+      "name": "email risposta1",
+      "webhookId": "611734cd-ba60-4b56-92f8-98053c666a8c",
+      "credentials": {
+        "smtp": {
+          "id": "REwMrDeHhgcQLIT6",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Domande1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Domande1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Domande1": {
+      "main": [
+        [
+          {
+            "node": "email risposta1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "51f6466d-ec6b-4399-a43b-ac089f83ac0d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "f4q6eUXnldVeDz00",
+  "tags": []
+}
