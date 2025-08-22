@@ -1,0 +1,43 @@
+{
+  "name": "Telegram Polling Setup", 
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1.1,
+      "position": [-700, 150],
+      "id": "telegram-cron",
+      "name": "Telegram Polling Timer"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/getUpdates?offset={{ $vars.TELEGRAM_LAST_UPDATE_ID || 0 }}&timeout=10",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-550, 150],
+      "id": "telegram-getUpdates",
+      "name": "Get Telegram Updates"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Processa gli aggiornamenti di Telegram\nconst response = $input.item(0).json;\n\nif (!response.ok || !response.result || response.result.length === 0) {\n  return [];\n}\n\nconst updates = response.result;\nlet outputs = [];\nlet lastUpdateId = 0;\n\nfor (const update of updates) {\n  if (update.message && update.message.text) {\n    // Verifica se contiene richiesta vincoli\n    if (update.message.text.toLowerCase().includes('vincol')) {\n      outputs.push({\n        json: {\n          source_type: 'telegram',\n          telegram_message: update.message.text,\n          telegram_chat_id: update.message.chat.id,\n          telegram_user: update.message.from.username || update.message.from.first_name,\n          telegram_message_id: update.message.message_id\n        }\n      });\n    }\n  }\n  lastUpdateId = Math.max(lastUpdateId, update.update_id);\n}\n\n// Salva l'ultimo update_id per la prossima richiesta\nif (lastUpdateId > 0) {\n  $vars.TELEGRAM_LAST_UPDATE_ID = lastUpdateId + 1;\n}\n\nreturn outputs;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-400, 150], 
+      "id": "process-telegram-updates",
+      "name": "Processa Updates"
+    }
+  ]
+}

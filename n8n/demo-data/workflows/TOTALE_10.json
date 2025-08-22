@@ -1,0 +1,1154 @@
+{
+  "name": "TOTALE_09",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Code node to merge protocol number with AI output\nconst protocolData = $input.item.json; // From \"Generazione protocollo\"\nconst aiOutput = $('Estrattore e Classificatore Segnalazione1').item.json.output;\n\n// Parse the AI output if it's JSON\nlet parsedOutput;\ntry {\n  const cleanOutput = aiOutput.replace(/```json\\s*/, '').replace(/```\\s*$/, '').trim();\n  parsedOutput = JSON.parse(cleanOutput);\n} catch (error) {\n  // If parsing fails, create a basic structure\n  parsedOutput = {\n    output: aiOutput\n  };\n}\n\n// Add the protocol number to the parsed output\nparsedOutput.numero_protocollo = protocolData.numero_protocollo;\n\n// Return the merged data\nreturn {\n  json: {\n    ai_output: aiOutput,\n    numero_protocollo: protocolData.numero_protocollo,\n    ...parsedOutput\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5712,
+        -512
+      ],
+      "id": "d396375f-8eea-4342-bab8-5379d6b6d030",
+      "name": "Merge Protocol Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node to merge protocol number with AI output for Qdrant\nconst protocolData = $input.item.json; // From \"Generazione protocollo\"\nconst aiOutput = $('Estrattore e Classificatore Segnalazione1').item.json.output;\n\n// Parse the AI output if it's JSON\nlet parsedOutput;\ntry {\n  const cleanOutput = aiOutput.replace(/```json\\s*/, '').replace(/```\\s*$/, '').trim();\n  parsedOutput = JSON.parse(cleanOutput);\n} catch (error) {\n  // If parsing fails, create a basic structure\n  parsedOutput = {\n    output: aiOutput,\n    oggetto: 'Segnalazione generica',\n    descrizione: aiOutput,\n    risposta_cittadino: 'Risposta standard',\n    nome: 'Non specificato',\n    cognome: 'Non specificato',\n    telefono: 'Non fornito',\n    email: 'non.fornita@comune.maglianointoscana.gr.it',\n    indirizzo: 'Da definire',\n    canale: 'Telefono',\n    data: new Date().toISOString().split('T')[0],\n    tipologia: 'Lavori Pubblici',\n    urgenza: 'Media',\n    dati_catastali: null,\n    ufficio_competente: 'Lavori Pubblici',\n    priorita: 'Media',\n    telefono_ufficio: '0564 593439',\n    email_ufficio: 'tecnico@comune.maglianointoscana.gr.it',\n    tempi_gestione: '5-7 giorni lavorativi',\n    documenti_richiesti: 'Da verificare',\n    note_interne: 'Segnalazione creata automaticamente, dati da verificare.'\n  };\n}\n\n// Add the protocol number to the parsed output\nparsedOutput.numero_protocollo = protocolData.numero_protocollo;\n\n// Update risposta_cittadino with correct protocol number if it exists\nif (parsedOutput.risposta_cittadino && parsedOutput.risposta_cittadino.includes('MAGL-')) {\n  const today = new Date().toISOString().split('T')[0];\n  parsedOutput.risposta_cittadino = `Gentile Cittadino/a, confermiamo la ricezione della segnalazione del ${today}. La pratica è stata assegnata all'ufficio ${parsedOutput.ufficio_competente || 'Lavori Pubblici'} con numero di protocollo ${protocolData.numero_protocollo}. Contatteremo per completare i dati mancanti. Per informazioni: 0564 593439 negli orari Lunedì-Mercoledì 9:00-12:00, Martedì-Giovedì 16:00-17:00. Cordiali saluti, Comune di Magliano in Toscana`;\n}\n\n// Return the merged data for Qdrant processing\nreturn {\n  json: {\n    output: parsedOutput,\n    numero_protocollo: protocolData.numero_protocollo,\n    ...parsedOutput\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5712,
+        -912
+      ],
+      "id": "78deeb0d-0079-4d7b-aa24-b7d86f96f8cc",
+      "name": "Merge Protocol Data for Qdrant"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        4576,
+        -496
+      ],
+      "id": "21d42ffe-b909-468e-bc92-3b9c7d39e2c7",
+      "name": "Modello Linguistico1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analizza la seguente segnalazione ed estrai le informazioni strutturate in formato JSON. Usa i valori predefiniti se un dato manca.\n\n**SEGNALAZIONE:**\n{{ $('Generatore Segnalazioni').item.json.output }}\n\n**REGOLE DI ESTRAZIONE E VALORI PREDEFINITI:**\n- **Nome**: \"Non specificato\"\n- **Cognome**: \"Non specificato\"\n- **Telefono**: \"Da richiedere\"\n- **Email**: \"Non specificato\"\n- **Indirizzo**: \"Da definire\"\n- **Canale**: \"Non specificato\"\n- **Data**: Data odierna (2025-08-17)\n- **Tipologia**: \"Lavori Pubblici\" (scegli tra: Lavori Pubblici, Patrimonio, Edilizia Privata, Paesaggistico, Ambiente, Urbanistica, Protezione Civile)\n- **Oggetto**: Titolo sintetico del problema.\n- **Descrizione**: Dettagli completi del problema.\n- **Urgenza**: \"Media\" (scegli tra: Alta, Media, Bassa)\n- **Dati catastali**: null\n- **Ufficio competente**: Basato sulla tipologia, se non specificato usa \"Lavori Pubblici\".\n- **Priorita**: \"Media\" (scegli tra: Alta, Media, Bassa)\n- **Telefono ufficio**: \"0564 593439\"\n- **Email ufficio**: \"tecnico@comune.maglianointoscana.gr.it\"\n- **Tempi gestione**: \"5-7 giorni lavorativi\"\n- **Numero protocollo**: \"MAGL-2024-XXXX\"\n- **Documenti richiesti**: \"Da verificare\"\n- **Risposta cittadino**: Risposta personalizzata al cittadino.\n- **Note interne**: Attività previste per il personale.\n\n**RISPOSTA JSON (OBBLIGATORIO):**\n```json\n{\n  \"nome\": \"valore\",\n  \"cognome\": \"valore\",\n  \"telefono\": \"valore\", \n  \"email\": \"valore\",\n  \"indirizzo\": \"valore\",\n  \"canale\": \"valore\",\n  \"data\": \"YYYY-MM-DD\",\n  \"tipologia\": \"valore\",\n  \"oggetto\": \"valore\",\n  \"descrizione\": \"valore\",\n  \"urgenza\": \"valore\",\n  \"dati_catastali\": null,\n  \"ufficio_competente\": \"valore\",\n  \"priorita\": \"valore\",\n  \"telefono_ufficio\": \"valore\",\n  \"email_ufficio\": \"valore\",\n  \"tempi_gestione\": \"valore\",\n  \"numero_protocollo\": \"valore\",\n  \"documenti_richiesti\": \"valore\",\n  \"risposta_cittadino\": \"valore\",\n  \"note_interne\": \"valore\"\n}\n```\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        4912,
+        -720
+      ],
+      "id": "00ff1aaf-0d27-4dbd-b17d-17c5f1bc29f9",
+      "name": "Estrattore e Classificatore Segnalazione1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Funzione per generare valori di fallback\nfunction generateFallbacks() {\n  const today = new Date().toISOString().split('T')[0];\n  const randomProtocol = Math.floor(1000 + Math.random() * 9000);\n  \n  return {\n    nome: 'Non specificato',\n    cognome: 'Non specificato', \n    telefono: 'Non fornito',\n    email: 'non.fornita@comune.maglianointoscana.gr.it',\n    indirizzo: 'Da definire',\n    canale: 'Telefono',\n    data: today,\n    tipologia: 'Lavori Pubblici',\n    oggetto: 'Segnalazione generica',\n    descrizione: 'Dati incompleti - richiedere integrazione',\n    urgenza: 'Media',\n    dati_catastali: null,\n    ufficio_competente: 'Lavori Pubblici',\n    priorita: 'Media',\n    telefono_ufficio: '0564 593439',\n    email_ufficio: 'tecnico@comune.maglianointoscana.gr.it',\n    tempi_gestione: '5-7 giorni lavorativi',\n    numero_protocollo: 'MAGL-2024-' + randomProtocol,\n    documenti_richiesti: 'Da verificare',\n    risposta_cittadino: `Gentile Cittadino/a, confermiamo la ricezione della segnalazione del ${today}. La pratica è stata assegnata all'ufficio Lavori Pubblici con numero di protocollo MAGL-2024-${randomProtocol}. Contatteremo per completare i dati mancanti. Per informazioni: 0564 593439 negli orari Lunedì-Mercoledì 9:00-12:00, Martedì-Giovedì 16:00-17:00. Cordiali saluti, Comune di Magliano in Toscana`,\n    note_interne: 'Segnalazione creata automaticamente, dati da verificare.'\n  };\n}\n\n// Funzione per pulire e validare i dati\nfunction validateAndClean(data, fallbacks) {\n  const result = { ...fallbacks };\n  \n  for (const [key, value] of Object.entries(data)) {\n    const trimmedValue = (typeof value === 'string') ? value.trim() : value;\n    if (trimmedValue !== null && trimmedValue !== undefined && trimmedValue !== '' && trimmedValue !== 'null' && !['Non specificato', 'Non fornito'].includes(trimmedValue)) {\n      if (key === 'tipologia') {\n        const allowedTypes = ['Lavori Pubblici', 'Patrimonio', 'Edilizia Privata', 'Paesaggistico', 'Ambiente', 'Urbanistica', 'Protezione Civile'];\n        result[key] = allowedTypes.includes(trimmedValue) ? trimmedValue : 'Lavori Pubblici';\n      } else if (key === 'priorita' || key === 'urgenza') {\n        const allowedPriorities = ['Alta', 'Media', 'Bassa'];\n        result[key] = allowedPriorities.includes(trimmedValue) ? trimmedValue : 'Media';\n      } else if (key === 'canale') {\n        const allowedChannels = ['Telefono', 'Email', 'WhatsApp'];\n        result[key] = allowedChannels.includes(trimmedValue) ? trimmedValue : fallbacks.canale;\n      } else if (key === 'data') {\n        const dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\n        result[key] = dateRegex.test(trimmedValue) ? trimmedValue : fallbacks.data;\n      } else if (key === 'email' && trimmedValue.includes('@')) {\n        result[key] = trimmedValue;\n      } else if (key === 'telefono' && (trimmedValue.includes('-') || trimmedValue.length >= 7)) {\n        result[key] = trimmedValue;\n      } else if (typeof trimmedValue === 'string') {\n        result[key] = trimmedValue;\n      }\n    }\n  }\n  \n  return result;\n}\n\n// MODIFICA PRINCIPALE: Ottenere il numero protocollo dal nodo \"Merge Protocol Data\"\nconst protocolloData = $input.item.json;\nconst numeroProtocollo = protocolloData.numero_protocollo;\n\nlet rawOutput = protocolloData.ai_output || '';\nrawOutput = rawOutput.replace(/```json\\s*/, '').replace(/```\\s*$/, '').trim();\n\nconst fallbacks = generateFallbacks();\n// Sovrascrivi con il numero protocollo generato\nif (numeroProtocollo) {\n  fallbacks.numero_protocollo = numeroProtocollo;\n  // Aggiorna anche la risposta cittadino con il numero corretto\n  const today = new Date().toISOString().split('T')[0];\n  fallbacks.risposta_cittadino = `Gentile Cittadino/a, confermiamo la ricezione della segnalazione del ${today}. La pratica è stata assegnata all'ufficio Lavori Pubblici con numero di protocollo ${numeroProtocollo}. Contatteremo per completare i dati mancanti. Per informazioni: 0564 593439 negli orari Lunedì-Mercoledì 9:00-12:00, Martedì-Giovedì 16:00-17:00. Cordiali saluti, Comune di Magliano in Toscana`;\n}\n\ntry {\n  const parsed = JSON.parse(rawOutput);\n  const validated = validateAndClean(parsed, fallbacks);\n  // Assicura che il numero protocollo sia sempre quello generato\n  validated.numero_protocollo = numeroProtocollo || validated.numero_protocollo;\n  return { json: validated };\n} catch (error) {\n  const jsonMatch = rawOutput.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    try {\n      const parsed = JSON.parse(jsonMatch[0]);\n      const validated = validateAndClean(parsed, fallbacks);\n      // Assicura che il numero protocollo sia sempre quello generato\n      validated.numero_protocollo = numeroProtocollo || validated.numero_protocollo;\n      return { json: validated };\n    } catch (e) {\n      return { json: { \n        ...fallbacks,\n        descrizione: `Errore parsing: ${rawOutput.substring(0, 200)}...`,\n        oggetto: 'Errore elaborazione dati',\n        numero_protocollo: numeroProtocollo || fallbacks.numero_protocollo\n      }};\n    }\n  }\n  \n  // Assicura che anche nei fallback il numero protocollo sia corretto\n  fallbacks.numero_protocollo = numeroProtocollo || fallbacks.numero_protocollo;\n  return { json: fallbacks };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5936,
+        -512
+      ],
+      "id": "5a82987f-ce2f-41a8-9c95-e88c62ed4c2b",
+      "name": "Parse JSON & Valida Dati1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un agente IA per il Comune di Magliano in Toscana. Genera UNA SOLA segnalazione casuale tra le seguenti tipologie. Occasionalmente, ometti uno o più campi (es. telefono, email, indirizzo) per simulare dati incompleti. Leggi la memoria per evitare di inserire dati già presenti\n\n**TIPOLOGIE DISPONIBILI:**\n1. **Lavori Pubblici**: strade dissestate, illuminazione pubblica, verde pubblico, segnaletica\n2. **Patrimonio**: edifici comunali, scuole, cimiteri, impianti sportivi\n3. **Edilizia Privata**: richieste permesso costruire, SCIA, CILA, verifiche conformità\n4. **Paesaggistico**: autorizzazioni paesaggistiche, vincoli, alberi monumentali\n5. **Ambiente**: raccolta rifiuti, inquinamento, verde urbano\n6. **Urbanistica**: piani regolatori, zonizzazioni\n7. **Protezione Civile**: emergenze, sicurezza\n\n**GENERA SEMPRE:**\n- Nome e Cognome realistici italiani (diversi ogni volta, caria fra nomi maschili e famminili)\n- Telefono (formato: 3xx-xxxxxxx)\n- Email (nome.cognome@provider.it)\n- Canale: Telefono, Email, o WhatsApp\n- Data odierna (formato YYYY-MM-DD oggi è )\n- Luogo specifico di Magliano in Toscana, Montiano o Pereta o zone aperte\n- Descrizione dettagliata del problema\n- Se Paesaggistico: aggiungi dati catastali (Foglio 1-84, Mappale 1-300)\n\n**ESEMPI LUOGHI:**\n- Via Roma, Via del Corso, Piazza Garibaldi\n- Frazione Pereta, Frazione Montiano, Sant Andrea, Poderoen Cà dei Frati, Cupi\n- Scuola Elementare, Cimiteri Comunali, sede comunale, \n- Parchi Pubblici, Campi Sportivi di Magliano in Toscana, Montiano e Pereta\n- Zome aperte\n\n**FORMATO RISPOSTA:**\nGenera una sola segnalazione dettagliata in linguaggio naturale.\nOggi è il {{ new Date().toLocaleDateString('it-IT') }}\nOre {{ new Date().toLocaleTimeString('it-IT') }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        4560,
+        -720
+      ],
+      "id": "4c599f9b-476a-4d31-9c51-61a9b0e37dba",
+      "name": "Generatore Segnalazioni"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=segnalazioni",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome": "={{ $json.nome }}",
+            "cognome": "={{ $json.cognome }}",
+            "telefono": "={{ $json.telefono }}",
+            "email": "={{ $json.email }}",
+            "indirizzo": "={{ $json.indirizzo }}",
+            "canale": "={{ $json.canale }}",
+            "data": "={{ $json.data }}",
+            "tipologia": "={{ $json.tipologia }}",
+            "oggetto": "={{ $json.oggetto }}",
+            "descrizione": "={{ $json.descrizione }}",
+            "urgenza": "={{ $json.urgenza }}",
+            "dati_catastali": "={{ $json.dati_catastali }}",
+            "ufficio_competente": "={{ $json.ufficio_competente }}",
+            "priorita": "={{ $json.priorita }}",
+            "telefono_ufficio": "={{ $json.telefono_ufficio }}",
+            "email_ufficio": "={{ $json.email_ufficio }}",
+            "tempi_gestione": "={{ $json.tempi_gestione }}",
+            "documenti_richiesti": "={{ $json.documenti_richiesti }}",
+            "risposta_cittadino": "={{ $json.risposta_cittadino }}",
+            "numero_protocollo": "={{ $('Generazione protocollo1').item.json.numero_protocollo }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cognome",
+              "displayName": "cognome",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "indirizzo",
+              "displayName": "indirizzo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "canale",
+              "displayName": "canale",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipologia",
+              "displayName": "tipologia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "oggetto",
+              "displayName": "oggetto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "descrizione",
+              "displayName": "descrizione",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgenza",
+              "displayName": "urgenza",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dati_catastali",
+              "displayName": "dati_catastali",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ufficio_competente",
+              "displayName": "ufficio_competente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priorita",
+              "displayName": "priorita",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefono_ufficio",
+              "displayName": "telefono_ufficio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email_ufficio",
+              "displayName": "email_ufficio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tempi_gestione",
+              "displayName": "tempi_gestione",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "numero_protocollo",
+              "displayName": "numero_protocollo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "documenti_richiesti",
+              "displayName": "documenti_richiesti",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "risposta_cittadino",
+              "displayName": "risposta_cittadino",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6304,
+        -512
+      ],
+      "id": "cd175f9d-b7d0-4f57-8275-507df64d83f6",
+      "name": "Salva in Database",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        4992,
+        -496
+      ],
+      "id": "630659fa-84b0-4a1b-8c2b-2f4dcaec8c50",
+      "name": "Ollama Chat Model3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "n8n-segnalazioni",
+          "mode": "list",
+          "cachedResultName": "n8n-segnalazioni"
+        },
+        "embeddingBatchSize": 2000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        6192,
+        -1120
+      ],
+      "id": "d7effecc-7b1c-41ba-b047-f3177c6857c6",
+      "name": "Qdrant Vector Store1",
+      "credentials": {
+        "qdrantApi": {
+          "id": "sFfERYppMeBnFNeA",
+          "name": "Local QdrantApi database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:v1.5"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        6160,
+        -896
+      ],
+      "id": "5ae4542a-6a46-43dc-8bd3-ee3e067bda67",
+      "name": "Embeddings Ollama2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "nome",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.nome }}"
+              },
+              {
+                "name": "cognome",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.cognome }}"
+              },
+              {
+                "name": "telefono",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.telefono }}"
+              },
+              {
+                "name": "email",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.email }}"
+              },
+              {
+                "name": "indirizzo",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.indirizzo }}"
+              },
+              {
+                "name": "canale",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.canale }}"
+              },
+              {
+                "name": "tipologia",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.tipologia }}"
+              },
+              {
+                "name": "urgenza",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.urgenza }}"
+              },
+              {
+                "name": "ufficio_competente",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.ufficio_competente }}"
+              },
+              {
+                "name": "tempi_gestione",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.tempi_gestione }}"
+              },
+              {
+                "name": "numero_protocollo",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.numero_protocollo }}"
+              },
+              {
+                "name": "documenti_richiesti",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.documenti_richiesti }}"
+              },
+              {
+                "name": "note_interne",
+                "value": "={{ $('Merge Protocol Data for Qdrant').item.json.note_interne }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        6288,
+        -896
+      ],
+      "id": "94209797-f663-45c8-80ef-bd95fb014db1",
+      "name": "Default Data Loader1"
+    },
+    {
+      "parameters": {
+        "chunkSize": 10000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        6368,
+        -688
+      ],
+      "id": "4400f04e-fef0-4767-84c5-4eef28c621f7",
+      "name": "Recursive Character Text Splitter1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Leggi Ultimo Messaggio1').item.json.result[0].message.chat.id }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        4704,
+        -496
+      ],
+      "id": "4a5b8c90-aea3-4cd4-940c-89b066a6af5b",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/getUpdates?limit=1&offset=-1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4336,
+        -720
+      ],
+      "id": "4bf9bd6f-6fac-48fc-924f-6fa295703406",
+      "name": "Leggi Ultimo Messaggio1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 25
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        4112,
+        -720
+      ],
+      "id": "3678a70f-a55f-49a5-83e2-2cfc7ef32a3f",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "=Conferma Segnalazione al Comune di Magliano in Toscana - Rif. {{ $json.numero_protocollo }}",
+        "html": "=<p>Gentile {{ $json.nome }} {{ $json.cognome }},</p>\n<p>{{ $json.risposta_cittadino }}</p>\n<p>Per ulteriori aggiornamenti, può fare riferimento al numero di protocollo <b>{{ $json.numero_protocollo }}</b> e contattare l'ufficio competente ai seguenti recapiti: {{ $json.ufficio_competente }} - {{ $json.contatto_ufficio }}.</p>\n<p>Cordiali saluti,<br>Comune di Magliano in Toscana</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        6656,
+        -416
+      ],
+      "id": "3e70a2e2-8d06-4853-bdb5-88bf1a436b94",
+      "name": "Conferma al Cittadino1",
+      "webhookId": "188464cc-56b4-4fa5-8589-240621d552b2",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "magliano.settoretecnico@gmail.com",
+        "subject": "=Nuova Segnalazione: {{ $json.oggetto }}",
+        "html": "=<p><b>Nuova Segnalazione Ricevuta</b></p>\n<ul>\n  <li><b>Nome:</b> {{ $json.nome }} {{ $json.cognome }}</li>\n  <li><b>Contatto:</b> {{ $json.telefono }} / {{ $json.email }} (Canale: {{ $json.canale }})</li>\n  <li><b>Data:</b> {{ $json.data }}</li>\n  <li><b>Luogo:</b> {{ $json.indirizzo }}</li>\n  <li><b>Tipologia:</b> {{ $json.tipologia }}</li>\n  <li><b>Oggetto:</b> {{ $json.oggetto }}</li>\n  <li><b>Descrizione:</b> {{ $json.descrizione }}</li>\n  <li><b>Urgenza:</b> {{ $json.urgenza }}</li>\n  <li><b>Assegnato a:</b> {{ $json.operatore }}</li>\n</ul>\n<p><b>Note Interne:</b> {{ $json.note_interne }}</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        6656,
+        -608
+      ],
+      "id": "f35ad9a5-92c0-46cf-b163-c039b8120bee",
+      "name": "Notifica Interna all'Ufficio1",
+      "webhookId": "dff3a31d-5ffd-46a6-a7d5-13163f3092c0",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Formattazione email con gestione problemi già noti\nconst all = $input.all();\nconsole.log('Input ricevuto dall\\'AI Agent:', JSON.stringify(all, null, 2));\n\nif (all.length === 0) {\n  return [{\n    json: {\n      resoconto_mail: \"<p><i>❌ Nessuna segnalazione trovata per i criteri specificati.</i></p>\",\n      count: 0,\n      hasResults: false\n    }\n  }];\n}\n\nconst aiOutput = all[0].json.output || all[0].json.text || '';\nconsole.log('Testo dall\\'AI da formattare:', aiOutput);\n\nif (aiOutput.toLowerCase().includes('nessuna segnalazione')) {\n  return [{\n    json: {\n      resoconto_mail: \"<p><i>❌ Nessuna segnalazione trovata per i criteri specificati.</i></p>\",\n      count: 0,\n      hasResults: false\n    }\n  }];\n}\n\n// Rileva se il problema è già noto\nconst problemaGiaSegnalato = aiOutput.toLowerCase().includes('problema_gia_segnalato: si') ||\n                            aiOutput.toLowerCase().includes('numero_segnalazioni_precedenti');\n\nlet htmlFormatted = '';\nlet segnalazioniCount = 0;\nlet problemaNottoInfo = {};\n\n// Estrai informazioni sul problema già noto\nif (problemaGiaSegnalato) {\n  const numeroMatch = aiOutput.match(/NUMERO_SEGNALAZIONI_PRECEDENTI:\\s*([^\\n]+)/i);\n  const primoMatch = aiOutput.match(/PRIMO_RILEVAMENTO:\\s*([^\\n]+)/i);\n  const ufficioMatch = aiOutput.match(/UFFICIO_COMPETENTE:\\s*([^\\n]+)/i);\n  const statoMatch = aiOutput.match(/STATO_INTERVENTO:\\s*([^\\n]+)/i);\n  const soluzioniMatch = aiOutput.match(/SOLUZIONI_ADOTTATE:\\s*([^\\n]+)/i);\n  const prossimiMatch = aiOutput.match(/PROSSIMI_PASSI:\\s*([^\\n]+)/i);\n  const comunicazioneMatch = aiOutput.match(/COMUNICAZIONE_CITTADINO:\\s*([^\\n]+)/i);\n  \n  problemaNottoInfo = {\n    numeroSegnalazioni: numeroMatch ? numeroMatch[1].trim() : '',\n    primoRilevamento: primoMatch ? primoMatch[1].trim() : '',\n    ufficioCompetente: ufficioMatch ? ufficioMatch[1].trim() : 'Settore Tecnico',\n    statoIntervento: statoMatch ? statoMatch[1].trim() : '',\n    soluzioniAdottate: soluzioniMatch ? soluzioniMatch[1].trim() : '',\n    prossimiPassi: prossimiMatch ? prossimiMatch[1].trim() : '',\n    comunicazione: comunicazioneMatch ? comunicazioneMatch[1].trim() : ''\n  };\n}\n\n// Splitta il testo in paragrafi\nconst paragraphs = aiOutput.split('\\n\\n').filter(p => p.trim());\n\nfor (const paragraph of paragraphs) {\n  const cleanParagraph = paragraph.trim();\n  \n  // Se contiene segnalazione\n  if (cleanParagraph.toLowerCase().includes('segnalazione') && \n      !cleanParagraph.toLowerCase().includes('problema_gia_segnalato')) {\n    segnalazioniCount++;\n    \n    const lines = cleanParagraph.split('\\n').map(line => line.trim()).filter(line => line);\n    \n    htmlFormatted += `\n    <div style=\"margin-bottom: 20px; padding: 15px; border-left: 4px solid #007bff; background: #f8f9fa; border-radius: 5px;\">\n      <h4 style=\"color: #007bff; margin-top: 0;\">🎯 ${lines[0]}</h4>\n    `;\n    \n    // Formatta le righe successive con nuovi campi\n    for (let i = 1; i < lines.length; i++) {\n      const line = lines[i];\n      \n      if (line.toLowerCase().startsWith('oggetto:')) {\n        htmlFormatted += `<p><strong>📋 ${line}</strong></p>`;\n      } else if (line.toLowerCase().startsWith('descrizione:')) {\n        htmlFormatted += `<p><strong>📝 ${line}</strong></p>`;\n      } else if (line.toLowerCase().startsWith('stato:')) {\n        const stato = line.substring(6).trim();\n        const color = stato.toLowerCase().includes('completat') ? '#28a745' : \n                     stato.toLowerCase().includes('lavorazione') || stato.toLowerCase().includes('corso') ? '#ffc107' : '#dc3545';\n        htmlFormatted += `<p><strong>📊 Stato:</strong> <span style=\"padding: 3px 8px; border-radius: 3px; color: white; background: ${color}\">${stato}</span></p>`;\n      } else if (line.toLowerCase().startsWith('data:')) {\n        htmlFormatted += `<p><strong>📅 ${line}</strong></p>`;\n      } else if (line.toLowerCase().startsWith('luogo:') || line.toLowerCase().startsWith('indirizzo:')) {\n        htmlFormatted += `<p><strong>📍 ${line}</strong></p>`;\n      } else if (line.toLowerCase().startsWith('segnalatore:')) {\n        htmlFormatted += `<p><strong>👤 ${line}</strong></p>`;\n      } else if (line.toLowerCase().startsWith('ufficio_competente:')) {\n        const ufficio = line.substring('ufficio_competente:'.length).trim();\n        htmlFormatted += `<p><strong>🏢 Ufficio competente:</strong> <span style=\"background: #e3f2fd; padding: 2px 6px; border-radius: 3px;\">${ufficio}</span></p>`;\n      } else if (line.toLowerCase().startsWith('azioni_intraprese:')) {\n        const azioni = line.substring('azioni_intraprese:'.length).trim();\n        htmlFormatted += `<p><strong>⚡ Azioni intraprese:</strong> ${azioni}</p>`;\n      } else if (line.length > 5) {\n        htmlFormatted += `<p>${line}</p>`;\n      }\n    }\n    \n    htmlFormatted += `</div>`;\n  }\n  // Altri paragrafi importanti (escludi i metadati)\n  else if (cleanParagraph.length > 20 && \n           !cleanParagraph.toLowerCase().includes('problema_gia_segnalato') &&\n           !cleanParagraph.toLowerCase().includes('numero_segnalazioni') &&\n           !cleanParagraph.toLowerCase().includes('ufficio_competente') &&\n           !cleanParagraph.toLowerCase().includes('comunicazione_cittadino')) {\n    htmlFormatted += `<p style=\"margin-bottom: 10px;\">${cleanParagraph.replace(/\\n/g, '<br>')}</p>`;\n  }\n}\n\n// Se non abbiamo trovato segnalazioni strutturate\nif (segnalazioniCount === 0 && aiOutput.length > 10) {\n  htmlFormatted = `\n    <div style=\"padding: 15px; background: #e9ecef; border-radius: 5px;\">\n      <h4>📄 Risultati della ricerca:</h4>\n      <div style=\"white-space: pre-line; line-height: 1.6;\">${aiOutput}</div>\n    </div>\n  `;\n  segnalazioniCount = 1;\n}\n\n// Header principale\nlet headerHtml = `<h3 style=\"color: #007bff;\">📊 Analisi: ${segnalazioniCount} elemento/i trovato/i</h3>`;\n\n// Box problema già noto/gestito\nif (problemaGiaSegnalato) {\n  headerHtml += `\n  <div style=\"background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);\">\n    <h4 style=\"margin-top: 0; display: flex; align-items: center; color: white;\">\n      <span style=\"font-size: 24px; margin-right: 10px;\">✅</span>\n      PROBLEMA GIÀ NOTO E IN GESTIONE\n    </h4>\n    <div style=\"background: rgba(255,255,255,0.2); padding: 15px; border-radius: 5px; margin-top: 15px;\">\n      ${problemaNottoInfo.numeroSegnalazioni ? `<p><strong>📈 Segnalazioni precedenti:</strong> ${problemaNottoInfo.numeroSegnalazioni}</p>` : ''}\n      ${problemaNottoInfo.primoRilevamento ? `<p><strong>📅 Primo rilevamento:</strong> ${problemaNottoInfo.primoRilevamento}</p>` : ''}\n      <p><strong>🏢 Ufficio responsabile:</strong> ${problemaNottoInfo.ufficioCompetente}</p>\n      ${problemaNottoInfo.statoIntervento ? `<p><strong>⚙️ Stato intervento:</strong> ${problemaNottoInfo.statoIntervento}</p>` : ''}\n      ${problemaNottoInfo.soluzioniAdottate ? `<p><strong>🔧 Soluzioni adottate:</strong> ${problemaNottoInfo.soluzioniAdottate}</p>` : ''}\n      ${problemaNottoInfo.prossimiPassi ? `<p><strong>➡️ Prossimi passi:</strong> ${problemaNottoInfo.prossimiPassi}</p>` : ''}\n    </div>\n    ${problemaNottoInfo.comunicazione ? `\n    <div style=\"background: rgba(255,255,255,0.3); padding: 12px; border-radius: 5px; margin-top: 10px; border-left: 4px solid white;\">\n      <strong>💬 Comunicazione:</strong> ${problemaNottoInfo.comunicazione}\n    </div>` : ''}\n  </div>`;\n}\n\nheaderHtml += '<hr>';\n\nconst finalHtml = headerHtml + htmlFormatted;\n\n// Footer con rassicurazioni per problemi noti\nif (problemaGiaSegnalato) {\n  const footerHtml = `\n  <hr>\n  <div style=\"background: #d4edda; padding: 15px; border-radius: 5px; margin-top: 20px; border-left: 4px solid #28a745;\">\n    <h5 style=\"color: #155724; margin-top: 0;\">🏛️ MESSAGGIO DELL'AMMINISTRAZIONE:</h5>\n    <p style=\"color: #155724; margin-bottom: 10px; font-size: 16px; line-height: 1.5;\">\n      <strong>L'amministrazione comunale conferma di essere a conoscenza del problema segnalato e di averlo già preso in carico.</strong>\n    </p>\n    <div style=\"background: rgba(21, 87, 36, 0.1); padding: 10px; border-radius: 3px;\">\n      <p style=\"color: #155724; margin: 0; font-style: italic;\">\n        \"Ringraziamo i cittadini per le segnalazioni ricevute. Il nostro impegno è quello di garantire trasparenza e tempestività negli interventi per il benessere della comunità.\"\n      </p>\n    </div>\n    <p style=\"color: #155724; margin-top: 10px; margin-bottom: 0; font-size: 14px;\">\n      <strong>Per aggiornamenti:</strong> È possibile contattare il ${problemaNottoInfo.ufficioCompetente} per informazioni sullo stato di avanzamento.\n    </p>\n  </div>`;\n  \n  const finalHtmlWithFooter = finalHtml + footerHtml;\n  \n  console.log('HTML con problema già noto generato:', finalHtmlWithFooter);\n  \n  return [{\n    json: {\n      resoconto_mail: finalHtmlWithFooter,\n      count: segnalazioniCount,\n      hasResults: segnalazioniCount > 0,\n      problemaGiaNoto: true,\n      ufficioCompetente: problemaNottoInfo.ufficioCompetente,\n      statoIntervento: problemaNottoInfo.statoIntervento\n    }\n  }];\n}\n\nconsole.log('HTML generato:', finalHtml);\n\nreturn [{\n  json: {\n    resoconto_mail: finalHtml,\n    count: segnalazioniCount,\n    hasResults: segnalazioniCount > 0,\n    problemaGiaNoto: false\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4736,
+        16
+      ],
+      "id": "c9a7a781-f3e9-4318-838c-7ecab8ae55dc",
+      "name": "Elabora Risultati1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5525090b-0522-4c7b-8513-f2873f93ae4f",
+              "leftValue": "={{ $json.hasResults }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4960,
+        16
+      ],
+      "id": "62483583-74a8-49ac-aff4-48923b8a4953",
+      "name": "Verifica Risultati1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "magliano.settoretecnico@gmail.com",
+        "subject": "📋 Ricerca Segnalazioni - Nessun Risultato",
+        "html": "=<h3>Ricerca Segnalazioni</h3>\n<p><strong>Query:</strong> {{ $('When chat message received').item.json.chatInput }}</p>\n<hr>\n{{ $json.resoconto_mail }}\n<p><small>Sistema di gestione segnalazioni - Comune di Magliano in Toscana</small></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        5184,
+        -80
+      ],
+      "id": "e26c9111-3398-4da5-a4cb-dcc325662417",
+      "name": "Email Nessun Risultato1",
+      "webhookId": "302e1587-c028-4b17-a93c-5608b3851c25",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "magliano.settoretecnico@gmail.com",
+        "subject": "=📊 Ricerca Segnalazioni - {{ $json.count }} risultati",
+        "html": "=<h3>Ricerca Segnalazioni</h3>\n<p><strong>Query:</strong> {{ $('When chat message received').item.json.chatInput }}</p>\n<hr>\n{{ $json.resoconto_mail }}\n<hr>\n<p><small>Sistema di gestione segnalazioni - Comune di Magliano in Toscana</small></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        5184,
+        112
+      ],
+      "id": "fd87d452-1ce7-4ad5-90f3-0ddbcdfd5baa",
+      "name": "Email Con Risultati1",
+      "webhookId": "ad3f392d-047b-45d9-8384-5c5deccaa367",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un assistente specializzato nella ricerca di segnalazioni per il settore Tecnico del Comune di Magliano in Toscana.\n\nRICHIESTA: {{ $('When chat message received').item.json.chatInput }}\n\nISTRUZIONI PRINCIPALI:\n✅ Cerca nel database delle segnalazioni usando il Vector Store Retriever\n\nGESTIONE DUPLICATI E COMUNICAZIONE:\n📄 Se trovi segnalazioni simili/duplicate (stesso luogo, stesso problema, date vicine), RAGGRUPPA e fornisci:\n   - \"PROBLEMA_GIA_SEGNALATO: SI\" \n   - \"NUMERO_SEGNALAZIONI_PRECEDENTI: [numero]\"\n   - \"PRIMO_RILEVAMENTO: [data più vecchia]\"\n   - \"UFFICIO_COMPETENTE: [se disponibile, es. Settore Tecnico, Manutenzioni, etc.]\"\n   - \"STATO_INTERVENTO: [se disponibile: pianificato, in corso, completato, etc.]\"\n   - \"SOLUZIONI_ADOTTATE: [eventuali azioni già intraprese]\"\n   - \"PROSSIMI_PASSI: [se disponibili]\"\n   - \"COMUNICAZIONE_CITTADINO: Il problema è già noto all'amministrazione e sotto controllo\"\n\nDATI SEGNALAZIONI:\n✅ Per ogni segnalazione restituisci:\n   - id_segnalazione\n   - oggetto  \n   - descrizione\n   - stato\n   - data_segnalazione\n   - luogo/indirizzo (se disponibile)\n   - segnalatore (se disponibile)\n   - ufficio_competente (se disponibile)\n   - azioni_intraprese (se disponibili)\n\n✅ Se non trovi segnalazioni, rispondi: \"Nessuna segnalazione trovata\"\n❌ NON includere risposte o comunicazioni ai cittadini oltre a quelle specificate\n❌ NON aggiungere commenti extra non richiesti\n\nOBIETTIVO: Rassicurare che l'amministrazione è a conoscenza dei problemi ricorrenti e li sta gestendo attivamente.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        4176,
+        16
+      ],
+      "id": "f977a255-1ef3-4489-a8ce-10df8d0a4398",
+      "name": "AI Agent Segnalazioni1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        4240,
+        240
+      ],
+      "id": "d716bb45-c515-4957-a564-1787a929d091",
+      "name": "Memory Buffer1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "=Database delle segnalazioni del settore Tecnico di Magliano in Toscana.",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "n8n-segnalazioni",
+          "mode": "list",
+          "cachedResultName": "n8n-segnalazioni"
+        },
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        4368,
+        240
+      ],
+      "id": "45f5dc1a-28ce-41b8-af72-f6994224fcf1",
+      "name": "Vector Store Segnalazioni1",
+      "credentials": {
+        "qdrantApi": {
+          "id": "sFfERYppMeBnFNeA",
+          "name": "Local QdrantApi database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {
+          "temperature": 0.1,
+          "topK": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        4112,
+        240
+      ],
+      "id": "cd1c56e4-8427-4223-91ba-2cdad4539f48",
+      "name": "Ollama Chat Model5",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:v1.5"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        4448,
+        448
+      ],
+      "id": "c7961ca6-3015-4cc6-a7c2-b45d8fdb22b7",
+      "name": "Embeddings Ollama3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE protocollo_counter\nSET ultimo_numero = ultimo_numero + 1\nWHERE anno = EXTRACT(YEAR FROM CURRENT_DATE)\nRETURNING ultimo_numero;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5264,
+        -720
+      ],
+      "id": "5d860e43-835d-4737-bb6d-a74725873434",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recupera l'ultimo numero dal nodo precedente (Postgres \"Ottieni Protocollo\")\nconst numero = $json.ultimo_numero;\nconst anno = new Date().getFullYear();\n\n// Costruisci il protocollo con zeri iniziali (es: MAGL-2025-0001)\nconst protocollo = `MAGL-${anno}-${String(numero).padStart(4, '0')}`;\n\n// Ritorna i dati originali + nuovo campo numero_protocollo\nreturn [{\n  json: {\n    ...$json,\n    numero_protocollo: protocollo\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5488,
+        -720
+      ],
+      "id": "6a413ae0-c23f-4169-adec-631c37965b66",
+      "name": "Generazione protocollo1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// La funzione accetta un array di elementi, in questo caso uno solo\nfor (const item of items) {\n  \n  // Accedi ai campi specifici dall'oggetto di input\n  const oggetto = item.json.oggetto || 'Segnalazione generica';\n  const descrizione = item.json.descrizione || 'Descrizione non disponibile';\n  const rispostaCittadino = item.json.risposta_cittadino || 'Risposta standard';\n  const numeroProtocollo = item.json.numero_protocollo || 'N/A';\n  const tipologia = item.json.tipologia || 'Lavori Pubblici';\n  const urgenza = item.json.urgenza || 'Media';\n  const indirizzo = item.json.indirizzo || 'Da definire';\n  \n  // Concatena i campi in un'unica stringa leggibile\n  const testoCompleto = `Protocollo: ${numeroProtocollo}. Tipologia: ${tipologia}. Oggetto: ${oggetto}. Descrizione: ${descrizione}. Luogo: ${indirizzo}. Urgenza: ${urgenza}. Risposta al cittadino: ${rispostaCittadino}.`;\n  \n  // Crea un nuovo oggetto con la chiave 'text' e la stringa combinata\n  const jsonlOutput = {\n    text: testoCompleto\n  };\n  \n  // Sostituisci il vecchio item con il nuovo oggetto JSONL\n  item.json = jsonlOutput;\n}\n\n// Restituisci l'array di elementi modificato, pronto per l'output\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5936,
+        -912
+      ],
+      "id": "5d318835-25c2-47a6-90af-9cf0899c92b2",
+      "name": "Testo per embedding1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        3872,
+        -128
+      ],
+      "id": "724a7c26-0107-492b-aa3c-d3911891cf50",
+      "name": "When chat message received",
+      "webhookId": "efd3aa79-5886-458e-aceb-d0c922ce545f"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge Protocol Data": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON & Valida Dati1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Protocol Data for Qdrant": {
+      "main": [
+        [
+          {
+            "node": "Testo per embedding1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modello Linguistico1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generatore Segnalazioni",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estrattore e Classificatore Segnalazione1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON & Valida Dati1": {
+      "main": [
+        [
+          {
+            "node": "Salva in Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generatore Segnalazioni": {
+      "main": [
+        [
+          {
+            "node": "Estrattore e Classificatore Segnalazione1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva in Database": {
+      "main": [
+        [
+          {
+            "node": "Notifica Interna all'Ufficio1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Conferma al Cittadino1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Estrattore e Classificatore Segnalazione1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Generatore Segnalazioni",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio1": {
+      "main": [
+        [
+          {
+            "node": "Generatore Segnalazioni",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Leggi Ultimo Messaggio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Elabora Risultati1": {
+      "main": [
+        [
+          {
+            "node": "Verifica Risultati1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica Risultati1": {
+      "main": [
+        [
+          {
+            "node": "Email Con Risultati1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email Nessun Risultato1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Segnalazioni1": {
+      "main": [
+        [
+          {
+            "node": "Elabora Risultati1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory Buffer1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Segnalazioni1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Segnalazioni1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Segnalazioni1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Segnalazioni1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Vector Store Segnalazioni1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Generazione protocollo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generazione protocollo1": {
+      "main": [
+        [
+          {
+            "node": "Merge Protocol Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Protocol Data for Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Testo per embedding1": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Segnalazioni1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3e1daa2c-42c5-494b-b757-9dc10a44858a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "Zzm5YnJ46IFRH2Bo",
+  "tags": []
+}

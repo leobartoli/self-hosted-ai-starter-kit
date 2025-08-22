@@ -9,8 +9,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        6016,
-        1360
+        5920,
+        1768
       ],
       "id": "a0b01f02-50e9-494b-b7a7-f9f7ea63fa86",
       "name": "Modello Linguistico",
@@ -30,8 +30,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        6480,
-        1232
+        6384,
+        1552
       ],
       "id": "2b85fd64-4d89-491d-9b11-8154b0858ccb",
       "name": "Estrattore e Classificatore Segnalazione"
@@ -55,8 +55,8 @@
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.6,
       "position": [
-        6272,
-        1360
+        6176,
+        1768
       ],
       "id": "e60952b1-0899-43c0-933d-aa93c4d8bd1a",
       "name": "Segnalazioni Database",
@@ -74,8 +74,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6832,
-        1232
+        6848,
+        1648
       ],
       "id": "068dace0-988f-4bbe-a338-c2f5701c3918",
       "name": "Parse JSON & Valida Dati"
@@ -91,8 +91,8 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        7280,
-        1232
+        7448,
+        1648
       ],
       "id": "4f5d8751-629c-462d-88d8-81995714da20",
       "name": "Notifica Interna all'Ufficio",
@@ -115,8 +115,8 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        7280,
-        1424
+        7448,
+        1840
       ],
       "id": "0502d032-3324-4f70-b95b-83b0a47c9a0e",
       "name": "Conferma al Cittadino",
@@ -137,8 +137,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        6080,
-        1136
+        5976,
+        1544
       ],
       "id": "660f60e8-0777-4aea-a72c-5d4fa364530f",
       "name": "Generatore Segnalazioni1"
@@ -382,8 +382,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        7056,
-        1328
+        7088,
+        1744
       ],
       "id": "4241a9e9-3bb9-44a8-9f9c-f00f8f1a55b2",
       "name": "Salva in Database1",
@@ -401,8 +401,8 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.3,
       "position": [
-        5792,
-        1440
+        5696,
+        1744
       ],
       "id": "7957a495-d72e-42a4-841d-fcd3d17117db",
       "name": "When chat message received",
@@ -416,8 +416,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        6560,
-        1456
+        6456,
+        1768
       ],
       "id": "88701a93-bf64-45ba-b608-189b1d780693",
       "name": "Ollama Chat Model",
@@ -436,8 +436,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmOllama",
       "typeVersion": 1,
       "position": [
-        6144,
-        1952
+        6048,
+        2360
       ],
       "id": "52c3a44d-5a0d-46df-84ef-1a3a4ce8e86d",
       "name": "Ollama Model",
@@ -457,8 +457,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        6544,
-        1728
+        6448,
+        2136
       ],
       "id": "7c0e758d-4411-4f30-a4eb-f8880d3329ef",
       "name": "Seleziona segnalazioni",
@@ -478,8 +478,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6832,
-        1728
+        6800,
+        2136
       ],
       "id": "19726875-4bb3-42ed-8c15-8dc8cc58881a",
       "name": "Code"
@@ -511,8 +511,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        7056,
-        1728
+        7088,
+        2136
       ],
       "id": "9d3010a9-e5c1-4ec4-b12c-56af8d2b8620",
       "name": "If"
@@ -522,8 +522,8 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        6144,
-        1360
+        6048,
+        1768
       ],
       "id": "346a980f-67d3-47e4-b345-7a3d96c0b4f3",
       "name": "Simple Memory"
@@ -548,8 +548,8 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        6080,
-        1728
+        5976,
+        2136
       ],
       "id": "cc50a035-2584-4614-bab1-1b9afd0f83d2",
       "name": "Richiesta stato segnalazione"
@@ -565,8 +565,8 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        7280,
-        1616
+        7448,
+        2032
       ],
       "id": "0864bcf0-4540-4977-8d6f-e51d8abf61cb",
       "name": "Risposta negativa segnalazione",
@@ -589,8 +589,8 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        7280,
-        1824
+        7448,
+        2232
       ],
       "id": "24066219-f86b-4c48-9715-d1ae3fba1876",
       "name": "Risposta positiva segnalazione",
@@ -616,18 +616,13 @@
           "mode": "list",
           "cachedResultName": "segnalazioni"
         },
-        "where": {
-          "values": [
-            {}
-          ]
-        },
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        5456,
-        2048
+        5696,
+        2464
       ],
       "id": "015ac623-fed0-4356-8638-2e018aecede9",
       "name": "Seleziona segnalazioni1",
@@ -639,6 +634,176 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "listCollections",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        5696,
+        816
+      ],
+      "id": "4de662cb-69ff-4f02-a85e-805904fa37e0",
+      "name": "List Collections",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "Cb9ZjLAHhZt25pQq",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "n8n-segnalazioni",
+          "mode": "list",
+          "cachedResultName": "n8n-segnalazioni"
+        },
+        "embeddingBatchSize": 2000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        7344,
+        1040
+      ],
+      "id": "b2ab16a2-7b35-472f-b551-bbf1c49884b5",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "sFfERYppMeBnFNeA",
+          "name": "Local QdrantApi database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:v1.5"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        7312,
+        1264
+      ],
+      "id": "7e04beaf-5246-4900-a412-e12217b52069",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "oggetto",
+              "description": "oggetto"
+            },
+            {
+              "name": "descrizione",
+              "description": "descrizione"
+            },
+            {
+              "name": "risposta_cittadino",
+              "description": "risposta_cittadino"
+            },
+            {
+              "name": "nome",
+              "description": "nome"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        6736,
+        1248
+      ],
+      "id": "ccddde1e-0cdc-4413-a5cb-da9747906876",
+      "name": "Richiesta stato segnalazione1"
+    },
+    {
+      "parameters": {
+        "model": "mistral-small:24b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        6808,
+        1472
+      ],
+      "id": "c50a8a64-4303-4fda-bd19-f145739519a6",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// La funzione accetta un array di elementi, in questo caso uno solo\nfor (const item of items) {\n  \n  // Accedi ai campi specifici dall'oggetto di input\n  const oggetto = item.json.output.oggetto;\n  const descrizione = item.json.output.descrizione;\n  const rispostaCittadino = item.json.output.risposta_cittadino;\n  \n  // Concatena i campi in un'unica stringa leggibile\n  const testoCompleto = `${oggetto}. ${descrizione}. Risposta al cittadino: ${rispostaCittadino}.`;\n  \n  // Crea un nuovo oggetto con la chiave 'text' e la stringa combinata\n  const jsonlOutput = {\n    text: testoCompleto\n  };\n  \n  // Sostituisci il vecchio item con il nuovo oggetto JSONL\n  item.json = jsonlOutput;\n}\n\n// Restituisci l'array di elementi modificato, pronto per l'output\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7088,
+        1088
+      ],
+      "id": "77956b8f-859d-4a88-870b-f60a44ba6900",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "nome",
+                "value": "={{ $('Richiesta stato segnalazione1').item.json.output.nome }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        7536,
+        1264
+      ],
+      "id": "09957468-5d0c-4731-8927-a73d92388c4b",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 10000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        7520,
+        1472
+      ],
+      "id": "6f423a71-13fc-48c1-92d2-cc0ddda49ad3",
+      "name": "Recursive Character Text Splitter"
     }
   ],
   "pinData": {},
@@ -659,6 +824,11 @@
         [
           {
             "node": "Parse JSON & Valida Dati",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Richiesta stato segnalazione1",
             "type": "main",
             "index": 0
           }
@@ -813,13 +983,84 @@
           }
         ]
       ]
+    },
+    "List Collections": {
+      "main": [
+        []
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Richiesta stato segnalazione1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Richiesta stato segnalazione1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "59be0375-9ec2-4675-8b08-4eff318424e0",
+  "versionId": "59704318-419b-4f3d-8a34-080ba89a441c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"

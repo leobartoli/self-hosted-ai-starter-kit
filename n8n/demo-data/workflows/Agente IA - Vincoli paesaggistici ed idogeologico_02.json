@@ -1,0 +1,531 @@
+{
+  "name": "Agente IA - Vincoli paesaggistici ed idogeologico",
+  "nodes": [
+    {
+      "parameters": {
+        "text": "=leggi {{ $json.textHtml }} ed estrai foglio e mappale. Se presenti più fogli e mappali scegli i primi",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "foglio",
+              "description": "foglio catastale"
+            },
+            {
+              "name": "mappale",
+              "description": "mappale catastale"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        -96
+      ],
+      "id": "65dee2ae-ce73-417c-959b-50b97ffa708a",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        128
+      ],
+      "id": "3abec543-cec7-4345-a685-a20ecfeddb32",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "52d66140-a4a6-4661-bb9f-1ad19d3488c1",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Richiesta presenza vincoli paesaggistici ed idrogeologico",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        8
+      ],
+      "id": "8600b820-f336-435d-a2fb-217d843ffd54",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nodo Formattazione modificato - Template email professionale CORRETTO\n\n// Leggi il messaggio dei vincoli e i dati catastali\nconst messaggioVincoli = items[0]?.json?.messaggio_vincoli;\nconst foglio = $('Information Extractor').item.json.output.foglio;\nconst mappale = $('Information Extractor').item.json.output.mappale;\n\n// Controllo di sicurezza\nif (!messaggioVincoli || !foglio || !mappale) {\n  return [{\n    json: {\n      error: 'Dati mancanti per la formattazione email.'\n    }\n  }];\n}\n\n// Mappatura dei vincoli ai riferimenti legali completi\nconst vincoliMapping = {\n    'costa': 'DLgs 42/2004, articolo 142, comma1, lettera a) - Territori costieri.',\n    'laghi': 'DLgs 42/2004, articolo 142, comma1, lettera b) - Territori contermini ai laghi.',\n    'fiumi': 'DLgs 42/2004, articolo 142, comma1, lettera c) - Fiumi, torrenti, corsi d\\'acqua.',\n    'contigua': 'DLgs 42/2004, articolo 142, comma1, lettera f) - Parco Regionale e relativa area contigua.',\n    'boschi': 'DLgs 42/2004, articolo 142, comma1, lettera g) - Area e territori coperti da foreste e boschi.',\n    'interesse_archeologico': 'DLgs 42/2004, articolo 142, comma1, lettera m) - Zone di interesse archeologico.',\n    'capitana': 'DLgs 42/2004, articolo 136, lettera d) - DM 13/2019 - Zona a nord dell\\'abitato di Magliano in Toscana - Colline della Capitana.',\n    'parco': 'DLgs 42/2004, articolo 136 - DM 26/09/1962 - Zona dei Monti dell\\'Uccellina, compresa parte della limitrofa pianura.',\n    'pereta': 'DLgs 42/2004, articolo 136 - DM 16/05/1974 - Zona di Pereta sita nel territorio del comune di Magliano in Toscana.',\n    'magliano': 'DLgs 42/2004, articolo 136 - DM 07/12/1973 - Centro abitato e zone circostanti del comune di Magliano in Toscana.',\n    'idrogeologico': 'Vincolo idrogeologico'\n};\n\n// Funzione che formatta il messaggio in HTML professionale\nfunction formatEmailHtml(messaggio, foglio, mappale) {\n  // Crea la struttura base dell'email\n  const baseHtml = `\n    <!DOCTYPE html>\n    <html>\n    <head>\n      <meta charset=\"UTF-8\">\n      <title>Vincoli Paesaggistici - Comune di Magliano in Toscana</title>\n    </head>\n    <body style=\"font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f9f9f9;\">\n      <div style=\"max-width: 700px; margin: 0 auto; background: white; border: 1px solid #ddd; border-radius: 5px; padding: 30px;\">\n        \n        <div style=\"text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 25px;\">\n          <h1 style=\"margin: 0; font-size: 20px; color: #333;\">\n            Comune di Magliano in Toscana\n          </h1>\n          <p style=\"margin: 5px 0 0 0; font-size: 14px; color: #666;\">\n            Settore Tecnico\n          </p>\n        </div>\n        \n        <div>\n          <p><strong>Oggetto:</strong> Rilascio informazioni vincoli paesaggistici e idrogeologico - Foglio ${foglio} Mappale ${mappale}</p>\n          \n          <p>Gentile richiedente,</p>\n          \n          <p>con riferimento alla sua richiesta di informazioni sui vincoli paesaggistici e idrogeologici, si comunica quanto segue:</p>\n          \n          <p><strong>ESITO DELLA RICERCA:</strong><br>\n          Il nostro sistema ha elaborato la sua domanda relativa al foglio catastale ${foglio} e mappale ${mappale} e dalle informazioni che ci ha fornito risulta quanto segue:</p>\n          \n          <!-- SPAZIO PER IL CONTENUTO VARIABILE -->\n          \n          <p><strong>VALIDITÀ DELLE INFORMAZIONI:</strong><br>\n          I dati forniti sono estratti dal database ufficiale del Comune e hanno valore informativo alla data odierna.</p>\n          \n          <p>Si resta a disposizione per ogni chiarimento.</p>\n          \n          <div style=\"margin-top: 30px; text-align: right;\">\n            <p style=\"margin: 0;\"><strong>Arch. Bartoli Leonardo</strong></p>\n            <p style=\"margin: 0; font-style: italic; font-size: 14px;\">Responsabile Settore Tecnico</p>\n            <p style=\"margin: 0; font-size: 14px;\">Comune di Magliano in Toscana</p>\n          </div>\n        </div>\n        \n      </div>\n    </body>\n    </html>\n  `;\n  \n  let variabileContenuto = '';\n  \n  // Caso 1: Foglio/mappale non trovati nel database\n  if (messaggio.includes('non risultano dati')) {\n    variabileContenuto = `\n      <p>I dati forniti non producono risultati (dati inesatti o particelle che nel frattempo sono state frazionate, eliminate, sostituite con nuove, ecc.)</p>\n    `;\n  }\n  // Caso 2: Nessun vincolo trovato per il foglio/mappale esistente - PATTERN MULTIPLI\n  else if (messaggio.includes('Nessun vincolo paesaggistico o idrogeologico presente') || \n           messaggio.includes('non sono stati trovati vincoli paesaggistici né idrogeologici')) {\n    variabileContenuto = `\n      <p><strong>Nessun vincolo paesaggistico o idrogeologico presente.</strong></p>\n    `;\n  }\n  // Caso 3: Vincoli presenti\n  else if (messaggio.includes('sono presenti i seguenti vincoli paesaggistici:')) {\n    const vincoliPaesPart = messaggio.split('Vincoli Paesaggistici:')[1].split('Vincolo Idrogeologico:')[0].trim();\n    const vincoloIdroPart = messaggio.split('Vincolo Idrogeologico:')[1].trim();\n    \n    let vincoliPaesList = '';\n    if (vincoliPaesPart.length > 0) {\n        // Converti i nomi semplici in riferimenti legali completi\n        const vincoliPaesArray = vincoliPaesPart.split(',').map(v => v.trim().toLowerCase());\n        const mappedVincoli = vincoliPaesArray.map(v => `<li>${vincoliMapping[v] || v}</li>`).join('');\n        vincoliPaesList = `\n            <ul>\n                ${mappedVincoli}\n            </ul>\n        `;\n    } else {\n        vincoliPaesList = '<p>Nessun vincolo paesaggistico presente.</p>';\n    }\n\n    let vincoloIdroList = '';\n    if (vincoloIdroPart.length > 0) {\n        // Mappa il nome semplice a un riferimento legale, se presente\n        const mappedIdro = vincoloIdroPart.toLowerCase();\n        vincoloIdroList = `\n            <ul>\n                <li>${vincoliMapping[mappedIdro] || mappedIdro}</li>\n            </ul>\n        `;\n    } else {\n        vincoloIdroList = '<p>Nessun vincolo idrogeologico presente.</p>';\n    }\n    \n    if (vincoliPaesPart.length > 0 || vincoloIdroPart.length > 0) {\n      variabileContenuto = `\n        <p><strong>L'area è soggetta ai seguenti vincoli:</strong></p>\n        <p><strong>Vincoli Paesaggistici:</strong></p>${vincoliPaesList}\n        <p><strong>Vincolo Idrogeologico:</strong></p>${vincoloIdroList}\n      `;\n    }\n  }\n  \n  // Inserisci il contenuto variabile nella struttura base\n  return baseHtml.replace('<!-- SPAZIO PER IL CONTENUTO VARIABILE -->', variabileContenuto);\n}\n\n// Genera l'HTML formattato\nconst emailHtml = formatEmailHtml(messaggioVincoli, foglio, mappale);\n\n// Restituisci l'output\nreturn [{\n  json: {\n    email_html: emailHtml,\n    messaggio_vincoli: messaggioVincoli\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        8
+      ],
+      "id": "f110dcd3-0176-4299-a174-b6b030787d82",
+      "name": "Formattazione1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        -800,
+        8
+      ],
+      "id": "d55b20d1-61bf-45f1-b7bb-955a1780ac52",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "7bP3tFPix1yheYdL",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=n8n-vincoli",
+          "mode": "name"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "foglio",
+              "value": "={{ $json.output.foglio }}"
+            },
+            {
+              "column": "mappale",
+              "value": "={{ $json.output.mappale }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        8
+      ],
+      "id": "6e51a81f-687e-4f37-9e59-7e05d862125b",
+      "name": "Vincoli paesaggistici1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Verifica se ci sono risultati dal database\nconst inputData = $input.all();\n\n// Recupera foglio e mappale dal nodo Information Extractor\nconst foglio = $('Information Extractor').item.json.output.foglio;\nconst mappale = $('Information Extractor').item.json.output.mappale;\n\nlet messaggioVincoli = '';\n\n// Controlla se sono stati trovati record nel database\nif (!inputData || inputData.length === 0) {\n    // Nessun record trovato - foglio/mappale non esistente\n    messaggioVincoli = `non risultano dati, il foglio catastale ${foglio} e il mappale ${mappale} non producono risultati (dati inesatti o particelle che nel frattempo sono state frazionate, eliminate, sostituite con nuove, ecc.)`;\n} else {\n    // Record trovato, verifica se ha un ID valido\n    const firstItem = inputData[0]?.json;\n    \n    if (!firstItem || !firstItem.id) {\n        // Record vuoto o senza ID - foglio/mappale non esistente\n        messaggioVincoli = `non risultano dati, il foglio catastale ${foglio} e il mappale ${mappale} non producono risultati (dati inesatti o particelle che nel frattempo sono state frazionate, eliminate, sostituite con nuove, ecc.)`;\n    } else {\n        // Record valido trovato, verifica i vincoli\n        const vincoliPaesaggistici = [\n            firstItem.paes_interesse_archeologico,\n            firstItem.paes_boschi,\n            firstItem.paes_costa,\n            firstItem.paes_fiumi,\n            firstItem.paes_laghi,\n            firstItem.paes_area_contigua_parco,\n            firstItem.paes_dm_capitana,\n            firstItem['paes__dm_parco'],\n            firstItem.paes_dm_pereta,\n            firstItem.paes_dm_magliano\n        ]\n        .filter(item => item && item.trim() !== '' && item !== null && item !== undefined)\n        .join(', ');\n        \n        const vincoloIdrogeologico = firstItem.vincolo_idrogeologico && firstItem.vincolo_idrogeologico.trim() !== '' ? firstItem.vincolo_idrogeologico : '';\n        \n        // Controlla se ci sono vincoli presenti\n        if (vincoliPaesaggistici.length > 0 || vincoloIdrogeologico.length > 0) {\n            messaggioVincoli = `sono presenti i seguenti vincoli paesaggistici: Vincoli Paesaggistici: ${vincoliPaesaggistici} Vincolo Idrogeologico: ${vincoloIdrogeologico}`; \n        } else {\n            // Record esistente ma senza vincoli\n            messaggioVincoli = `per il foglio catastale ${foglio} e il mappale ${mappale} non sono stati trovati vincoli paesaggistici né idrogeologici.`;\n        }\n    }\n}\n\nreturn [{\n  json: {\n    messaggio_vincoli: messaggioVincoli,\n    foglio: foglio,\n    mappale: mappale,\n    records_found: inputData.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        8
+      ],
+      "id": "f23456f9-686e-46c5-8ad6-26551fd7dca2",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "={{ $('Email Trigger (IMAP)').item.json.metadata['return-path'] }}",
+        "subject": "=Rilascio informazioni vincoli paesaggistici e idrogeologico",
+        "html": "={{ $json.email_html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        8
+      ],
+      "id": "7545cdca-bd89-4eec-9089-678302db923b",
+      "name": "Risposta Email",
+      "webhookId": "7c26f46f-ea7e-42f7-81c0-44c57438f7ef",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/getUpdates?offset=1234568",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -576,
+        440
+      ],
+      "id": "7b68eff6-1697-4ffd-84b1-e373a21a07af",
+      "name": "Leggi Messaggi Telegram"
+    },
+    {
+      "parameters": {
+        "text": "=leggi {{ $json.last_message }} ed estrai foglio e mappale. Se presenti più fogli e mappali scegli i primi",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "foglio",
+              "description": "foglio catastale"
+            },
+            {
+              "name": "mappale",
+              "description": "mappale catastale"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -128,
+        440
+      ],
+      "id": "ce4c548a-eca2-4469-a010-c41e30e2adf4",
+      "name": "Information Extractor1"
+    },
+    {
+      "parameters": {
+        "model": "mistral-small:24b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        -56,
+        664
+      ],
+      "id": "149837ba-7c70-4e47-8092-7c25b3b4df90",
+      "name": "Ollama Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=n8n-vincoli",
+          "mode": "name"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "foglio",
+              "value": "={{ $json.output.foglio }}"
+            },
+            {
+              "column": "mappale",
+              "value": "={{ $json.output.mappale }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        440
+      ],
+      "id": "79c85e03-2b3f-4f8e-bc2e-5165b989d75b",
+      "name": "Vincoli paesaggistici",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Verifica se ci sono risultati dal database\nconst inputData = $input.all();\n\n// Recupera foglio e mappale dal nodo Information Extractor\nconst foglio = $('Information Extractor1').item.json.output.foglio;\nconst mappale = $('Information Extractor1').item.json.output.mappale;\n\nlet messaggioVincoli = '';\n\n// Controlla se sono stati trovati record nel database\nif (!inputData || inputData.length === 0) {\n    // Nessun record trovato - foglio/mappale non esistente\n    messaggioVincoli = `non risultano dati, il foglio catastale ${foglio} e il mappale ${mappale} non producono risultati (dati inesatti o particelle che nel frattempo sono state frazionate, eliminate, sostituite con nuove, ecc.)`;\n} else {\n    // Record trovato, verifica se ha un ID valido\n    const firstItem = inputData[0]?.json;\n    \n    if (!firstItem || !firstItem.id) {\n        // Record vuoto o senza ID - foglio/mappale non esistente\n        messaggioVincoli = `non risultano dati, il foglio catastale ${foglio} e il mappale ${mappale} non producono risultati (dati inesatti o particelle che nel frattempo sono state frazionate, eliminate, sostituite con nuove, ecc.)`;\n    } else {\n        // Record valido trovato, verifica i vincoli\n        const vincoliPaesaggistici = [\n            firstItem.paes_interesse_archeologico,\n            firstItem.paes_boschi,\n            firstItem.paes_costa,\n            firstItem.paes_fiumi,\n            firstItem.paes_laghi,\n            firstItem.paes_area_contigua_parco,\n            firstItem.paes_dm_capitana,\n            firstItem['paes__dm_parco'],\n            firstItem.paes_dm_pereta,\n            firstItem.paes_dm_magliano\n        ]\n        .filter(item => item && item.trim() !== '' && item !== null && item !== undefined)\n        .join(', ');\n        \n        const vincoloIdrogeologico = firstItem.vincolo_idrogeologico && firstItem.vincolo_idrogeologico.trim() !== '' ? firstItem.vincolo_idrogeologico : '';\n        \n        // Controlla se ci sono vincoli presenti\n        if (vincoliPaesaggistici.length > 0 || vincoloIdrogeologico.length > 0) {\n            messaggioVincoli = `sono presenti i seguenti vincoli paesaggistici: Vincoli Paesaggistici: ${vincoliPaesaggistici} Vincolo Idrogeologico: ${vincoloIdrogeologico}`; \n        } else {\n            // Record esistente ma senza vincoli\n            messaggioVincoli = `per il foglio catastale ${foglio} e il mappale ${mappale} non sono stati trovati vincoli paesaggistici né idrogeologici.`;\n        }\n    }\n}\n\nreturn [{\n  json: {\n    messaggio_vincoli: messaggioVincoli,\n    foglio: foglio,\n    mappale: mappale,\n    records_found: inputData.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        440
+      ],
+      "id": "b6289428-a064-4234-8503-4f835ae952f6",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -800,
+        440
+      ],
+      "id": "b8e220d7-7ee1-44b8-95cb-5f046ffc3823",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Assumendo che l'HTTP Request node si chiami \"Telegram Updates\"\n// e che il campo JSON sia data.result\nconst updates = $json[\"result\"];\n\nif (updates && updates.length > 0) {\n  return [{ last_message: updates[updates.length - 1].message.text }];\n} else {\n  return [{ last_message: \"Nessun messaggio\" }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        440
+      ],
+      "id": "e0bfed65-3812-4437-b7b1-1f6459366e97",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $('Leggi Messaggi Telegram').item.json.result[2].message.chat.id }}\",\n  \"text\": \"{{ $json.messaggio_vincoli }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        432
+      ],
+      "id": "ee5cfe79-7410-4926-8db4-f548077b9152",
+      "name": "Leggi Messaggi Telegram1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Vincoli paesaggistici1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formattazione1": {
+      "main": [
+        [
+          {
+            "node": "Risposta Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vincoli paesaggistici1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Formattazione1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor1": {
+      "main": [
+        [
+          {
+            "node": "Vincoli paesaggistici",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vincoli paesaggistici": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Leggi Messaggi Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Messaggi Telegram": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Leggi Messaggi Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9b8f8dd7-7ec2-4a14-ba0b-bd7ff0d4b8df",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "KSKXnPefLpY1Nqkn",
+  "tags": []
+}
