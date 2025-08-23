@@ -1,0 +1,270 @@
+{
+  "name": "Agente IA - Info settore Tecnico",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        -1136
+      ],
+      "id": "6121983c-c142-41a4-83a7-aed054d7f41a",
+      "name": "When chat message received",
+      "webhookId": "e5f6e589-a8d2-49b8-a695-5ec6e3e20310"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -880
+      ],
+      "id": "4d217f29-391f-45ad-9793-24a89727a2f3",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un assistente che indirizza cittadini e professionisti all’ufficio corretto del Settore Tecnico del Comune di Magliano in Toscana. Rispondi in modo professionale e conciso, usando ESCLUSIVAMENTE i dati forniti all'interno del database Postgres\n\n### 📌 Istruzioni operative\n\n1. Ricevi la domanda dell’utente. Questa è la domanda {{ $json.chatInput }}\n2. Identifica l’ufficio corretto basandoti sui dati forniti.\n3. Gli orari di apertura degli uffici valgono per tutti i servizi del settore Tecnico\n4. Per questioni complesse o che interessano più uffici indica il responsabile del settore Tecnico.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        -1136
+      ],
+      "id": "0a297659-fe4a-47c5-b0ce-f4585e232794",
+      "name": "Agente informazioni generali1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=settore_tecnico_uffici",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        816,
+        -880
+      ],
+      "id": "877d67e6-8d19-46e0-8e9b-60d6988ab1ff",
+      "name": "PostgreSQL1",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "settore_tecnico_uffici",
+          "mode": "list",
+          "cachedResultName": "settore_tecnico_uffici"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "dipendente_assegnato": " Geom. Mara Benocci e Geom. Simone Giusti",
+            "id": 3,
+            "nome_ufficio": "Ufficio Lavori Pubblici e Patrimonio",
+            "email": "mara.benocci@comune.maglianointoscana.gr.it "
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome_ufficio",
+              "displayName": "nome_ufficio",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "responsabile",
+              "displayName": "responsabile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pec",
+              "displayName": "pec",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "orari",
+              "displayName": "orari",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sede",
+              "displayName": "sede",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dipendente_assegnato",
+              "displayName": "dipendente_assegnato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1136,
+        -912
+      ],
+      "id": "941bb1ad-bc26-464e-bf4c-e52c89e91191",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Agente informazioni generali1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente informazioni generali1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente informazioni generali1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1c3bfb0b-c4cb-4e67-b8c1-817266b1f18b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "yePHcRL3n5p1oEMK",
+  "tags": []
+}

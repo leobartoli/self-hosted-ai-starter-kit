@@ -3,7 +3,8 @@ volumes:
   postgres_storage:
   ollama_storage:
   qdrant_storage:
-  shared_storage:  # Nuovo volume condiviso
+  shared_storage:
+  meilisearch_data: # Nuovo volume per MeiliSearch
 
 networks:
   demo:
@@ -34,9 +35,9 @@ x-ollama: &service-ollama
     - 11434:11434
   volumes:
     - ollama_storage:/root/.ollama
-    - shared_storage:/shared  # Volume condiviso principale
-    - ./images/upload:/shared/images/upload  # Cartella locale per upload
-    - ./images/processed:/shared/images/processed  # Cartella locale per immagini processate
+    - shared_storage:/shared
+    - ./images/upload:/shared/images/upload
+    - ./images/processed:/shared/images/processed
 
 x-init-ollama: &init-ollama
   image: ollama/ollama:latest
@@ -44,7 +45,7 @@ x-init-ollama: &init-ollama
   container_name: ollama-pull-llama
   volumes:
     - ollama_storage:/root/.ollama
-    - shared_storage:/shared  # Volume condiviso montato anche nell'init
+    - shared_storage:/shared
   entrypoint: /bin/sh
   environment:
     - OLLAMA_HOST=ollama:11434
@@ -74,7 +75,6 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
-
     volumes:
       - postgres_storage:/var/lib/postgresql/data
     healthcheck:
@@ -93,7 +93,7 @@ services:
       - "if [ -d /demo-data/credentials ] && [ -d /demo-data/workflows ]; then n8n import:credentials --separate --input=/demo-data/credentials && n8n import:workflow --separate --input=/demo-data/workflows; else echo 'Cartelle demo-data non trovate, saltando import'; fi"
     volumes:
       - ./n8n/demo-data:/demo-data
-      - shared_storage:/shared  # Volume condiviso montato in n8n-import
+      - shared_storage:/shared
     depends_on:
       postgres:
         condition: service_healthy
@@ -111,12 +111,14 @@ services:
       - n8n_storage:/home/node/.n8n
       - ./n8n/demo-data:/demo-data
       - ./shared:/data/shared
-      - shared_storage:/shared  # Volume condiviso montato in n8n
-      - ./images/upload:/shared/images/upload  # Cartella locale per upload
-      - ./images/processed:/shared/images/processed  # Cartella locale per immagini processate
+      - shared_storage:/shared
+      - ./images/upload:/shared/images/upload
+      - ./images/processed:/shared/images/processed
     depends_on:
       postgres:
         condition: service_healthy
+      meilisearch:
+        condition: service_started # Aggiunto: n8n dipende da MeiliSearch
 
   qdrant:
     image: qdrant/qdrant
@@ -128,6 +130,19 @@ services:
       - 6333:6333
     volumes:
       - qdrant_storage:/qdrant/storage
+
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    hostname: meilisearch
+    container_name: meilisearch
+    networks: ['demo']
+    restart: unless-stopped
+    ports:
+      - 7700:7700
+    volumes:
+      - meilisearch_data:/meili_data
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
 
   ollama-cpu:
     profiles: ["cpu"]
