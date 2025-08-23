@@ -35,6 +35,8 @@ x-ollama: &service-ollama
   volumes:
     - ollama_storage:/root/.ollama
     - shared_storage:/shared  # Volume condiviso principale
+    - ./images/upload:/shared/images/upload  # Cartella locale per upload
+    - ./images/processed:/shared/images/processed  # Cartella locale per immagini processate
 
 x-init-ollama: &init-ollama
   image: ollama/ollama:latest
@@ -110,6 +112,8 @@ services:
       - ./n8n/demo-data:/demo-data
       - ./shared:/data/shared
       - shared_storage:/shared  # Volume condiviso montato in n8n
+      - ./images/upload:/shared/images/upload  # Cartella locale per upload
+      - ./images/processed:/shared/images/processed  # Cartella locale per immagini processate
     depends_on:
       postgres:
         condition: service_healthy
