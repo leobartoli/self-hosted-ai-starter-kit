@@ -1,0 +1,293 @@
+{
+  "name": "Agente IA - Info settore Tecnico",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        -856
+      ],
+      "id": "6121983c-c142-41a4-83a7-aed054d7f41a",
+      "name": "When chat message received",
+      "webhookId": "e5f6e589-a8d2-49b8-a695-5ec6e3e20310"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -632
+      ],
+      "id": "4d217f29-391f-45ad-9793-24a89727a2f3",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un assistente del Settore Tecnico del Comune di Magliano in Toscana. Il tuo ruolo è indirizzare cittadini e professionisti all'ufficio corretto.\n\nIstruzioni operative:\nRispondi basandoti ESCLUSIVAMENTE sui dati disponibili.\n\nNon inventare, non aggiungere o non ipotizzare alcuna informazione che non sia presente nel database. Se un dato non è disponibile, devi indicare chiaramente che non hai quell'informazione.\n\nUtilizza la domanda dell'utente contenuta in {{ $json.chatInput }} per identificare il dipendente assegnato in base ai dati del database.\n\nSe la domanda non è chiara o mancano i dati per una risposta precisa, chiedi all'utente di fornire maggiori dettagli.\n\nIndica che gli orari di apertura degli uffici si applicano a tutti i servizi del Settore Tecnico.\n\nPer questioni complesse che richiedono più uffici, indirizza l'utente al responsabile del Settore Tecnico.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        616,
+        -856
+      ],
+      "id": "0a297659-fe4a-47c5-b0ce-f4585e232794",
+      "name": "Agente informazioni generali1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=settore_tecnico_uffici",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        816,
+        -632
+      ],
+      "id": "877d67e6-8d19-46e0-8e9b-60d6988ab1ff",
+      "name": "PostgreSQL1",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        -632
+      ],
+      "id": "04c6ad1d-efa3-4ee3-a04e-106d75a23ace",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "settore_tecnico_uffici",
+          "mode": "list",
+          "cachedResultName": "settore_tecnico_uffici"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": 4,
+            "nome_ufficio": "Ufficio Ambiente e SUAP",
+            "attivita": "ambiente, rifiuti, raccolta differenziata, gestione rifiuti, smaltimento rifiuti, raccolta porta a porta, rifiuti urbani, rifiuti ingombranti, isola ecologica, centro raccolta rifiuti, raccolta plastica, raccolta carta, raccolta vetro, raccolta organico, raccolta secco, cassonetti, raccolta RAEE, compostaggio, raccolta oli esausti, pulizia strade, gestione ambiente, tutela ambientale, inquinamento, energia sostenibile, sostenibilità ambientale, disinfestazioni, derattizzazioni, controllo zanzare, servizio ambientale, segnalazione rifiuti abbandonati, bonifica aree, protezione ambientale, Programmi di Miglioramento Agricolo Agricolo Ambientale per attività edilizia svolta da Imprenditori Agricoli, attività produttive, inizio attività, apertura attività, licenza, autorizzazione, permesso, SCIA, comunicazione, notifica, richiesta, istruttoria, procedimento unico, DIA, commercio, artigianato, industria, servizi, commercio al dettaglio, commercio all'ingrosso, somministrazione alimenti e bevande, pubblico esercizio, attività ricettive, agriturismo, albergo, B&B, acconciatore, estetista, vendita ambulante, chiosco, edicola, supermercato, ristorante, bar, sagre, fiere, normativa SUAP, regolamenti comunali, modulistica, documentazione, certificazioni, atti amministrativi, delibere, ordinanze, oneri di urbanizzazione, diritti di segreteria, igiene, sanità, ASL, prevenzione incendi, vigili del fuoco, antincendio, sicurezza, HACCP, sportello telematico, portale telematico, SUAP online, PEC, comunicazione, avviso, servizi alle imprese, imprese, imprenditore, sanzioni, regolarizzazione"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome_ufficio",
+              "displayName": "nome_ufficio",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attivita",
+              "displayName": "attivita",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pec",
+              "displayName": "pec",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "orari",
+              "displayName": "orari",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sede",
+              "displayName": "sede",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dipendente_assegnato",
+              "displayName": "dipendente_assegnato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1120,
+        -848
+      ],
+      "id": "941bb1ad-bc26-464e-bf4c-e52c89e91191",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Agente informazioni generali1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente informazioni generali1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente informazioni generali1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente informazioni generali1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2300478e-da60-4bf4-910a-4b214e9b87a5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "yePHcRL3n5p1oEMK",
+  "tags": []
+}
