@@ -1,0 +1,601 @@
+{
+  "name": "Vision_02",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -144
+      ],
+      "id": "b2d4fc96-14b0-4a22-acf9-d282637cdcd6",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "filePath": "/shared/images/upload/San Bruzio-particolare_03.jpg"
+      },
+      "id": "2f1d0e37-3fa3-49cd-9f0f-cca07d63c866",
+      "name": "Read pdf1",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -144
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -144
+      ],
+      "id": "5332de7b-919e-4309-92d7-ea12b843cd7c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "images_vectors",
+        "embeddingBatchSize": 2000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        -144
+      ],
+      "id": "536f507c-a8a4-4721-b051-3c95756d5603",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:v1.5"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        80
+      ],
+      "id": "a1b3f39e-4cf5-4b06-89e5-252310fc428e",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "nome_monumento",
+                "value": "San Bruzio-particolare_03.jpg"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        80
+      ],
+      "id": "e18942c4-3c17-4d9f-9372-d16bb9d2504e",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 5000,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        288
+      ],
+      "id": "ba62dddc-54f8-43ed-929a-dde7fb2b3ce1",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llava:34b\",\n  \"prompt\": \"Describe this image, acting as a detailed visual archivist, provide a comprehensive description of the monument and the surroundings. Your description should be precise and focus on features that are unique and identifiable. Include specific details about: Architectural Style: Describe the style (e.g., Renaissance, Baroque, Gothic, Romanesque, modern). Construction Material: Identify the primary materials (e.g., local stone, brick, marble, bronze, wood). Key Structures: Detail the main components (e.g., a multi-arched bridge, a statue on a pedestal, a fortified gate). Distinctive Features: Note any unique or specific elements (e.g., carved gargoyles, a specific inscription, decorative frescoes, a weather vane on top, a coat of arms). Surrounding Context: Describe the immediate environment (e.g., location next to a river, in a cobblestone town square, surrounded by ancient trees). Exclude any irrelevant information such as people, vehicles, or modern objects that are not part of the monument itself\",\n  \"images\": [\"{{ $json.data }}\"],\n  \"stream\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        -144
+      ],
+      "id": "b565cf35-3301-4bfa-81cc-6a019522fab7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c9e2c97-54be-4f65-8718-fa8081028d18",
+              "name": "response",
+              "value": "={{ $json.response }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        -144
+      ],
+      "id": "403d464c-c84a-4276-b341-78ba31e06bd3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## Creazione database immagini ",
+        "height": 688,
+        "width": 1600,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "790ee3e8-e949-4144-ae57-e766e68333de",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -656
+      ],
+      "id": "603ff249-e8ea-419d-be1d-b7b273192b26",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llava:34b\",\n  \"prompt\": \"Describe this image, acting as a detailed visual archivist, provide a comprehensive description of the monument and the surroundings. Your description should be precise and focus on features that are unique and identifiable. Include specific details about: Architectural Style: Describe the style (e.g., Renaissance, Baroque, Gothic, Romanesque, modern). Construction Material: Identify the primary materials (e.g., local stone, brick, marble, bronze, wood). Key Structures: Detail the main components (e.g., a multi-arched bridge, a statue on a pedestal, a fortified gate). Distinctive Features: Note any unique or specific elements (e.g., carved gargoyles, a specific inscription, decorative frescoes, a weather vane on top, a coat of arms). Surrounding Context: Describe the immediate environment (e.g., location next to a river, in a cobblestone town square, surrounded by ancient trees). Exclude any irrelevant information such as people, vehicles, or modern objects that are not part of the monument itself\",\n  \"images\": [\"{{ $json.data }}\"],\n  \"stream\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -656
+      ],
+      "id": "470cd8ff-ce36-4869-bf4e-7c9f5c3eb67b",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c9e2c97-54be-4f65-8718-fa8081028d18",
+              "name": "response",
+              "value": "={{ $json.response }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        -656
+      ],
+      "id": "a112954c-a6f6-40fb-a18f-1b2fe93d56f8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/getUpdates",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64,
+        -832
+      ],
+      "id": "1d55f8d5-6541-478e-8833-684c75cb29fc",
+      "name": "Leggi Ultimo Messaggio"
+    },
+    {
+      "parameters": {
+        "content": "## Invio immagini da Telegram \n",
+        "height": 688,
+        "width": 1600,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        -1024
+      ],
+      "typeVersion": 1,
+      "id": "cfc0b976-afc1-4cd9-a6f6-7a258aecdcb2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/getFile?file_id={{ $json.result[2].message.photo[2].file_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -832
+      ],
+      "id": "71036c2c-8ca6-4786-9dcf-f8f0e143e7bd",
+      "name": "Leggi Ultimo Messaggio1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/{{ $json.result.file_path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        -832
+      ],
+      "id": "54607db7-ca7c-4905-8d7f-cb30ea04ad56",
+      "name": "Leggi Ultimo Messaggio2"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:v1.5"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        -560
+      ],
+      "id": "c335ce0f-b5d0-49cb-b16c-021c37551335",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "images_vectors",
+          "mode": "list",
+          "cachedResultName": "images_vectors"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -32,
+        288
+      ],
+      "id": "a2bd2086-8d3e-47bc-a94b-6e4c7009db4c",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un esperto conoscitore delle eccellenze del territorio comunale di Magliano in Toscana. Ricevi una descrizione di una foto presa da un utente. Questa la descrizione della foto dell'utente:\n\n{{ $json.response }}\n\n\n\nLeggi i campi  \"text\" del database Eccellenze territorio e verifichi se la descrizione data dall'utente assomiglia a una di quelle salvate nle database.\n\n - Se il confronto da esito positivo rispondi \"Hai Vinto!!\n\n - Se il confronto da esito negativo rispondi \"Ritenta\"\n\n - Se l'utente ha vinto riporti il nome del monumento",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        -960
+      ],
+      "id": "42ed097d-703e-4125-ada5-128dff4f3191",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        848,
+        -736
+      ],
+      "id": "5f5acb66-63a0-4fa0-b9b7-58ea638d74da",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Database delle immagini delle eccellenze del territorio del comune di Magliano in Toscana",
+        "tableName": "images_vectors",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        -736
+      ],
+      "id": "7e5f0e6e-a0fb-4f7e-ba4d-b6e62400d4b0",
+      "name": "Eccellenze territorio",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Read pdf1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read pdf1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio": {
+      "main": [
+        [
+          {
+            "node": "Leggi Ultimo Messaggio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio1": {
+      "main": [
+        [
+          {
+            "node": "Leggi Ultimo Messaggio2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Eccellenze territorio",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eccellenze territorio": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f066588a-94f4-4571-abf5-15de33a4a65b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "gIVT0hPoqze1bKiv",
+  "tags": []
+}

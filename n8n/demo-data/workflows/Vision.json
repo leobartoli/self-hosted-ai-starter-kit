@@ -1,0 +1,108 @@
+{
+  "name": "Vision",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        752,
+        96
+      ],
+      "id": "b2d4fc96-14b0-4a22-acf9-d282637cdcd6",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "filePath": "/shared/images/upload/2.jpg"
+      },
+      "id": "2f1d0e37-3fa3-49cd-9f0f-cca07d63c866",
+      "name": "Read pdf1",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        544,
+        96
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        336,
+        96
+      ],
+      "id": "5332de7b-919e-4309-92d7-ea12b843cd7c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llava:34b\",\n  \"prompt\": \"Describe this image\",\n  \"images\": [\"{{ $json.data }}\"],\n  \"stream\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        928,
+        96
+      ],
+      "id": "b565cf35-3301-4bfa-81cc-6a019522fab7",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Read pdf1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read pdf1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "76d0d14f-3872-42e0-be22-aa3989d87419",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "gIVT0hPoqze1bKiv",
+  "tags": []
+}
