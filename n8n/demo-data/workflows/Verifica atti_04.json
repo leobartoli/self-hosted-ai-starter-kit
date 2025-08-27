@@ -3,28 +3,13 @@
   "nodes": [
     {
       "parameters": {
-        "promptType": "define",
-        "text": "=Sei un agente IA che verifica atti amministrativi del settore tecnico del Comune di Magliano in Toscana. Analizza il documento ricevuto e rispondi solo nel formato seguente, senza aggiungere altro:\n{{ $('Extract from File').item.json.text }}\n\n\nREPORT VERIFICA ATTO - [TITOLO DOCUMENTO]\nData: [DATA]\nCUP: [SE PRESENTE]\nCIG: [SE PRESENTE]\n\n1. TITOLO-CONTENUTO: ✅ / ⚠️ / ❌\n[Dettagli]\n\n2. CALCOLI: ✅ / ⚠️ / ❌\n[Dettagli con formule, controlla somme, IVA, percentuale subappalti = (subappalto ÷ totale) × 100, segnala se >50%]\n\n3. FORMA: ✅ / ⚠️ / ❌\n[Errori ortografici, date, protocolli, riferimenti normativi]\n\nRACCOMANDAZIONI:\n- [Correzioni prioritarie]\n\nSTATO FINALE: ✅ APPROVABILE / ⚠️ MINORI / ❌ NECESSARIE\n",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2.2,
-      "position": [
-        256,
-        -240
-      ],
-      "id": "8b8d2b21-46d2-4d8f-8560-15e47830440d",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
         "model": "gpt-oss:20b",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        336,
+        -48,
         -16
       ],
       "id": "8d428374-f898-418d-9aa2-1caa2c358ae0",
@@ -44,7 +29,7 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [
-        -320,
+        -688,
         -240
       ],
       "id": "99760cee-076f-454c-8004-b8e836700ffd",
@@ -82,7 +67,7 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        -96,
+        -464,
         -240
       ],
       "id": "b5b2fd2d-d489-4506-8ee3-12a03e9b9257",
@@ -96,7 +81,7 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        -32,
+        -400,
         -16
       ],
       "id": "66e830a2-95a0-4e85-aad4-2eeff3df0021",
@@ -110,43 +95,29 @@
     },
     {
       "parameters": {
-        "filePath": "/shared/images/upload/ACQUEDOTTO SAN CRESCENZIO - Rateizzazione BENICCHI.pdf"
+        "filePath": "/shared/images/upload/COMPLETAMENTO VIA GARIBALDI - affidamento PE+DL strutturale e PSC+CSE Bertini Gabriele.pdf"
       },
       "id": "187b71fc-a70e-41d9-8001-f70b6e069e31",
       "name": "Read pdf",
       "type": "n8n-nodes-base.readBinaryFile",
       "typeVersion": 1,
       "position": [
-        -544,
+        -912,
         -240
       ]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        -720,
-        -240
-      ],
-      "id": "95b4746b-4f26-4edd-8097-dfd6197f6447",
-      "name": "When chat message received",
-      "webhookId": "47148702-edc9-4ece-b500-e90dd11f07bb"
     },
     {
       "parameters": {
         "fromEmail": "magliano.settoretecnico@gmail.com",
         "toEmail": "magliano.settoretecnico@gmail.com",
         "subject": "=Verifica atto: {{ $('Information Extractor').item.json.output['oggetto atto'] }}",
-        "html": "={{ $json.output }}",
+        "html": "={{ $json.htmlContent }}",
         "options": {}
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        592,
+        464,
         -240
       ],
       "id": "96210b67-fcbe-446f-bb3e-e0c5eb430de6",
@@ -158,6 +129,216 @@
           "name": "SMTP account"
         }
       }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un agente IA che verifica atti amministrativi del settore tecnico del Comune di Magliano in Toscana. Analizza il documento ricevuto e rispondi solo nel formato seguente, senza aggiungere altro:\n{{ $('Extract from File').item.json.text }}\n\n\nREPORT VERIFICA ATTO - [TITOLO DOCUMENTO]\nData: [DATA]\nCUP: [SE PRESENTE]\nCIG: [SE PRESENTE]\n\n1. TITOLO-CONTENUTO-DISPOSITIVO: ✅ / ⚠️ / ❌\n[Dettagli]\n\n2. CALCOLI: ✅ / ⚠️ / ❌\n[Dettagli con formule, controlla somme, IVA, percentuale subappalti = (subappalto ÷ totale) × 100, segnala se >50%]\n\n3. FORMA: ✅ / ⚠️ / ❌\n[Errori ortografici, date, protocolli, riferimenti normativi]\n\nRACCOMANDAZIONI:\n- [Correzioni prioritarie]\n\nSTATO FINALE: ✅ APPROVABILE / ⚠️ MINORI / ❌ NECESSARIE\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        -240
+      ],
+      "id": "8b8d2b21-46d2-4d8f-8560-15e47830440d",
+      "name": "Verifica atto"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output;\n\nlet html = aiOutput\n   .replace(/\\n/g, '<br>')\n   .replace(/✅/g, '<span style=\"color:green\">✅</span>')\n   .replace(/⚠️/g, '<span style=\"color:orange\">⚠️</span>')\n   .replace(/❌/g, '<span style=\"color:red\">❌</span>');\n\nreturn [{\n   htmlContent: html,\n   plainContent: aiOutput\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -240
+      ],
+      "id": "a3ef8352-3cbb-445f-a6c0-99df5ea25f75",
+      "name": "Code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        -224
+      ],
+      "id": "384efe06-f1fe-4af3-bf63-d8a3c96da362",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        432
+      ],
+      "id": "9c0172f3-7eca-4b07-9133-a9e430246fda",
+      "name": "Ollama Chat Model2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -928,
+        208
+      ],
+      "id": "bf8c0015-3ecd-40eb-9620-236ae0f48eca",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }} estrai titolo atto, dispositivo atto, oggetto atto, motivazioni atto, premesse atto",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "dispositivo atto",
+              "description": "dispositivo atto"
+            },
+            {
+              "name": "oggetto atto",
+              "description": "oggetto atto"
+            },
+            {
+              "name": "titolo atto",
+              "description": "titolo atto"
+            },
+            {
+              "name": "motivazioni atto",
+              "description": "motivazioni atto"
+            },
+            {
+              "name": "premesse atto",
+              "description": "premesse atto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -704,
+        208
+      ],
+      "id": "205586a5-0ba4-455f-8534-72138d4a1303",
+      "name": "Information Extractor1"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        432
+      ],
+      "id": "d774a1eb-f442-445c-a462-f12062cb5ce1",
+      "name": "Ollama Chat Model3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "filePath": "/shared/images/upload/COMPLETAMENTO VIA GARIBALDI - affidamento PE+DL strutturale e PSC+CSE Bertini Gabriele.pdf"
+      },
+      "id": "ba00e9ef-0111-4670-ad70-c111bf40f1b4",
+      "name": "Read pdf1",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        -1152,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "magliano.settoretecnico@gmail.com",
+        "subject": "=Verifica atto: {{ $('Information Extractor1').item.json.output['oggetto atto'] }}",
+        "html": "={{ $json.htmlContent }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        208
+      ],
+      "id": "83d7bee5-2298-4a25-abb5-e61f1f0101ce",
+      "name": "Notifica Interna all'Ufficio",
+      "webhookId": "dff3a31d-5ffd-46a6-a7d5-13163f3092c0",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un agente IA che verifica atti amministrativi del settore tecnico del Comune di Magliano in Toscana. Analizza il documento ricevuto e rispondi solo nel formato seguente, senza aggiungere altro:\n{{ $('Extract from File1').item.json.text }}\n\n\nREPORT VERIFICA ATTO - [TITOLO DOCUMENTO]\nData: [DATA]\nCUP: [SE PRESENTE]\nCIG: [SE PRESENTE]\n\n1. TITOLO-CONTENUTO-DISPOSITIVO: ✅ / ⚠️ / ❌\n[Dettagli]\n\n2. CALCOLI: ✅ / ⚠️ / ❌\n[Dettagli con formule, controlla somme, IVA, percentuale subappalti = (subappalto ÷ totale) × 100, segnala se >50%]\n\n3. FORMA: ✅ / ⚠️ / ❌\n[Errori ortografici, date, protocolli, riferimenti normativi]\n\nRACCOMANDAZIONI:\n- [Correzioni prioritarie]\n\nSTATO FINALE: ✅ APPROVABILE / ⚠️ MINORI / ❌ NECESSARIE\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        208
+      ],
+      "id": "3d18615b-0676-49c8-a099-3ccdcf7fd1e4",
+      "name": "Verifica atto1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output;\n\nlet html = aiOutput\n   .replace(/\\n/g, '<br>')\n   .replace(/✅/g, '<span style=\"color:green\">✅</span>')\n   .replace(/⚠️/g, '<span style=\"color:orange\">⚠️</span>')\n   .replace(/❌/g, '<span style=\"color:red\">❌</span>');\n\nreturn [{\n   htmlContent: html,\n   plainContent: aiOutput\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        208
+      ],
+      "id": "86360bc6-afac-429f-ba3d-b2de21c38b15",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/getUpdates",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1392,
+        0
+      ],
+      "id": "9518e296-75ed-45c3-8bb2-2d824965a537",
+      "name": "Leggi Ultimo Messaggio3"
     }
   ],
   "pinData": {},
@@ -166,7 +347,7 @@
       "ai_languageModel": [
         [
           {
-            "node": "AI Agent",
+            "node": "Verifica atto",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -184,22 +365,11 @@
         ]
       ]
     },
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "Notifica Interna all'Ufficio1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Information Extractor": {
       "main": [
         [
           {
-            "node": "AI Agent",
+            "node": "Verifica atto",
             "type": "main",
             "index": 0
           }
@@ -228,11 +398,110 @@
         ]
       ]
     },
-    "When chat message received": {
+    "Verifica atto": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Notifica Interna all'Ufficio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
       "main": [
         [
           {
             "node": "Read pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Verifica atto1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor1": {
+      "main": [
+        [
+          {
+            "node": "Verifica atto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read pdf1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica atto1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Notifica Interna all'Ufficio",
             "type": "main",
             "index": 0
           }
@@ -244,7 +513,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "5c4843ee-8862-4a9c-ba83-820a064cfddb",
+  "versionId": "f09fe7d1-cf03-408b-9b0f-4e2f022d7fef",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
