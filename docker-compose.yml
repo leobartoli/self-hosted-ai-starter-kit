@@ -4,13 +4,13 @@ volumes:
   ollama_storage:
   qdrant_storage:
   shared_storage:
-  meilisearch_data: # Nuovo volume per MeiliSearch
+  meilisearch_data:
 
 networks:
   demo:
 
 x-n8n: &service-n8n
-  image: n8nio/n8n:latest
+  build: .
   networks: ['demo']
   environment:
     - DB_TYPE=postgresdb
@@ -118,7 +118,7 @@ services:
       postgres:
         condition: service_healthy
       meilisearch:
-        condition: service_started # Aggiunto: n8n dipende da MeiliSearch
+        condition: service_started
 
   qdrant:
     image: qdrant/qdrant

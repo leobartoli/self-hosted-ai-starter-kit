@@ -1,430 +1,19 @@
 {
-  "name": "Vision_03",
+  "name": "Vision_04",
   "nodes": [
     {
       "parameters": {
-        "operation": "binaryToPropery",
+        "promptType": "define",
+        "text": "=Sei un esperto conoscitore delle eccellenze del territorio di Magliano in Toscana. Ogni volta che ti vengono richieste informazioni su un’eccellenza, leggi attentamente la domanda dell’utente e cerca di individuare il nome dell’eccellenza consultando sempre il database eccellenze_magliano.\n\nUsa un approccio flessibile: accetta corrispondenze anche parziali o approssimative tra la domanda dell’utente e il nome dell’eccellenza.\n\nQuesta è la domanda dell’utente:\n{{ $json.text }}\n\nRispondi solo riportando la descrizione dell’eccellenza trovata nel database. Se non trovi nulla anche vagamente simile, resta silenzioso.",
         "options": {}
       },
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1,
-      "position": [
-        416,
-        -144
-      ],
-      "id": "b2d4fc96-14b0-4a22-acf9-d282637cdcd6",
-      "name": "Extract from File1"
-    },
-    {
-      "parameters": {
-        "filePath": "/shared/images/upload/San Bruzio-particolare_03.jpg"
-      },
-      "id": "2f1d0e37-3fa3-49cd-9f0f-cca07d63c866",
-      "name": "Read pdf1",
-      "type": "n8n-nodes-base.readBinaryFile",
-      "typeVersion": 1,
-      "position": [
-        192,
-        -144
-      ]
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -32,
-        -144
-      ],
-      "id": "5332de7b-919e-4309-92d7-ea12b843cd7c",
-      "name": "When clicking ‘Execute workflow’"
-    },
-    {
-      "parameters": {
-        "mode": "insert",
-        "tableName": "images_vectors",
-        "embeddingBatchSize": 2000,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
-      "typeVersion": 1.3,
-      "position": [
-        1120,
-        -144
-      ],
-      "id": "536f507c-a8a4-4721-b051-3c95756d5603",
-      "name": "Postgres PGVector Store",
-      "credentials": {
-        "postgres": {
-          "id": "LCpZD9DBViVjwmM6",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "nomic-embed-text:v1.5"
-      },
-      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
-      "typeVersion": 1,
-      "position": [
-        1088,
-        80
-      ],
-      "id": "a1b3f39e-4cf5-4b06-89e5-252310fc428e",
-      "name": "Embeddings Ollama",
-      "credentials": {
-        "ollamaApi": {
-          "id": "8OMWvqHyP2rNSFWy",
-          "name": "Ollama account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "textSplittingMode": "custom",
-        "options": {
-          "metadata": {
-            "metadataValues": [
-              {
-                "name": "nome_monumento",
-                "value": "San Bruzio-particolare_03.jpg"
-              }
-            ]
-          }
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
-      "typeVersion": 1.1,
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
       "position": [
         1216,
-        80
+        64
       ],
-      "id": "e18942c4-3c17-4d9f-9372-d16bb9d2504e",
-      "name": "Default Data Loader"
-    },
-    {
-      "parameters": {
-        "chunkSize": 5000,
-        "chunkOverlap": 100,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
-      "typeVersion": 1,
-      "position": [
-        1296,
-        288
-      ],
-      "id": "ba62dddc-54f8-43ed-929a-dde7fb2b3ce1",
-      "name": "Recursive Character Text Splitter"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://ollama:11434/api/generate",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"llava:34b\",\n  \"prompt\": \"Describe this image, acting as a detailed visual archivist, provide a comprehensive description of the monument and the surroundings. Your description should be precise and focus on features that are unique and identifiable. Include specific details about: Architectural Style: Describe the style (e.g., Renaissance, Baroque, Gothic, Romanesque, modern). Construction Material: Identify the primary materials (e.g., local stone, brick, marble, bronze, wood). Key Structures: Detail the main components (e.g., a multi-arched bridge, a statue on a pedestal, a fortified gate). Distinctive Features: Note any unique or specific elements (e.g., carved gargoyles, a specific inscription, decorative frescoes, a weather vane on top, a coat of arms). Surrounding Context: Describe the immediate environment (e.g., location next to a river, in a cobblestone town square, surrounded by ancient trees). Exclude any irrelevant information such as people, vehicles, or modern objects that are not part of the monument itself\",\n  \"images\": [\"{{ $json.data }}\"],\n  \"stream\": false\n}\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        640,
-        -144
-      ],
-      "id": "b565cf35-3301-4bfa-81cc-6a019522fab7",
-      "name": "HTTP Request"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "9c9e2c97-54be-4f65-8718-fa8081028d18",
-              "name": "response",
-              "value": "={{ $json.response }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        864,
-        -144
-      ],
-      "id": "403d464c-c84a-4276-b341-78ba31e06bd3",
-      "name": "Edit Fields"
-    },
-    {
-      "parameters": {
-        "content": "## Creazione database immagini ",
-        "height": 688,
-        "width": 1600,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -96,
-        -240
-      ],
-      "typeVersion": 1,
-      "id": "790ee3e8-e949-4144-ae57-e766e68333de",
-      "name": "Sticky Note"
-    },
-    {
-      "parameters": {
-        "operation": "binaryToPropery",
-        "binaryPropertyName": "=data",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1,
-      "position": [
-        80,
-        -608
-      ],
-      "id": "603ff249-e8ea-419d-be1d-b7b273192b26",
-      "name": "Extract from File"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://ollama:11434/api/generate",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"llava:34b\",\n  \"prompt\": \"Describe this image, acting as a detailed visual archivist, provide a comprehensive description of the monument and the surroundings. Your description should be precise and focus on features that are unique and identifiable. Include specific details about: Architectural Style: Describe the style (e.g., Renaissance, Baroque, Gothic, Romanesque, modern). Construction Material: Identify the primary materials (e.g., local stone, brick, marble, bronze, wood). Key Structures: Detail the main components (e.g., a multi-arched bridge, a statue on a pedestal, a fortified gate). Distinctive Features: Note any unique or specific elements (e.g., carved gargoyles, a specific inscription, decorative frescoes, a weather vane on top, a coat of arms). Surrounding Context: Describe the immediate environment (e.g., location next to a river, in a cobblestone town square, surrounded by ancient trees). Exclude any irrelevant information such as people, vehicles, or modern objects that are not part of the monument itself\",\n  \"images\": [\"{{ $json.data }}\"],\n  \"stream\": false\n}\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        304,
-        -608
-      ],
-      "id": "470cd8ff-ce36-4869-bf4e-7c9f5c3eb67b",
-      "name": "HTTP Request1"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "9c9e2c97-54be-4f65-8718-fa8081028d18",
-              "name": "response",
-              "value": "={{ $json.response }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        528,
-        -608
-      ],
-      "id": "a112954c-a6f6-40fb-a18f-1b2fe93d56f8",
-      "name": "Edit Fields1"
-    },
-    {
-      "parameters": {
-        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/getUpdates",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        64,
-        -832
-      ],
-      "id": "1d55f8d5-6541-478e-8833-684c75cb29fc",
-      "name": "Leggi Ultimo Messaggio"
-    },
-    {
-      "parameters": {
-        "content": "## Invio immagini da Telegram \n",
-        "height": 688,
-        "width": 1600,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -96,
-        -1024
-      ],
-      "typeVersion": 1,
-      "id": "cfc0b976-afc1-4cd9-a6f6-7a258aecdcb2",
-      "name": "Sticky Note1"
-    },
-    {
-      "parameters": {
-        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/getFile?file_id={{ $json.result[2].message.photo[2].file_id }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        288,
-        -832
-      ],
-      "id": "71036c2c-8ca6-4786-9dcf-f8f0e143e7bd",
-      "name": "Leggi Ultimo Messaggio1"
-    },
-    {
-      "parameters": {
-        "url": "=https://api.telegram.org/file/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/{{ $json.result.file_path }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        512,
-        -832
-      ],
-      "id": "54607db7-ca7c-4905-8d7f-cb30ea04ad56",
-      "name": "Leggi Ultimo Messaggio2"
-    },
-    {
-      "parameters": {
-        "model": "nomic-embed-text:v1.5"
-      },
-      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
-      "typeVersion": 1,
-      "position": [
-        928,
-        -544
-      ],
-      "id": "c335ce0f-b5d0-49cb-b16c-021c37551335",
-      "name": "Embeddings Ollama1",
-      "credentials": {
-        "ollamaApi": {
-          "id": "8OMWvqHyP2rNSFWy",
-          "name": "Ollama account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Sei un esperto conoscitore delle eccellenze del territorio comunale di Magliano in Toscana. Ricevi una descrizione di una foto presa da un utente. Questa la descrizione della foto dell'utente:\n\n{{ $json.response }}\n\n\n\nLeggi i campi  \"text\" del database Eccellenze territorio e verifichi se la descrizione data dall'utente assomiglia a una di quelle salvate nle database.\n\n - Se il confronto da esito positivo rispondi \"Hai Vinto!!\n\n - Se il confronto da esito negativo rispondi \"Ritenta\"\n\n - Se l'utente ha vinto riporti il nome del monumento",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2.2,
-      "position": [
-        944,
-        -960
-      ],
-      "id": "42ed097d-703e-4125-ada5-128dff4f3191",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "model": "gpt-oss:20b",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
-      "position": [
-        848,
-        -736
-      ],
-      "id": "5f5acb66-63a0-4fa0-b9b7-58ea638d74da",
-      "name": "Ollama Chat Model",
-      "credentials": {
-        "ollamaApi": {
-          "id": "8OMWvqHyP2rNSFWy",
-          "name": "Ollama account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "retrieve-as-tool",
-        "toolDescription": "Database delle immagini delle eccellenze del territorio del comune di Magliano in Toscana",
-        "tableName": "images_vectors",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
-      "typeVersion": 1.3,
-      "position": [
-        1120,
-        -720
-      ],
-      "id": "7e5f0e6e-a0fb-4f7e-ba4d-b6e62400d4b0",
-      "name": "Eccellenze territorio",
-      "credentials": {
-        "postgres": {
-          "id": "LCpZD9DBViVjwmM6",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO eccellenze_magliano (nome, descrizione, latitudine, longitudine) VALUES\n('Mura Medievali', 'L''antica cinta muraria di Magliano', 42.6000, 11.2000),\n('Ruderi di San Bruzio', 'Resti di una chiesa romanica', 42.5800, 11.2200);",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        1200,
-        -560
-      ],
-      "id": "a2bd2086-8d3e-47bc-a94b-6e4c7009db4c",
-      "name": "Execute a SQL query",
-      "credentials": {
-        "postgres": {
-          "id": "LCpZD9DBViVjwmM6",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "formTitle": "registrazione",
-        "formDescription": "registrazione degli utenti per gamification",
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "user"
-            },
-            {
-              "fieldLabel": "email"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.2,
-      "position": [
-        -32,
-        -1552
-      ],
-      "id": "93cccab0-1d2b-4fc1-a14e-f70b629bb38a",
-      "name": "On form submission",
-      "webhookId": "ab4339d6-0b93-4309-89e0-49b339c2442e"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Persona: Sei un assistente esperto e affidabile, specializzato nelle eccellenze del Comune di Magliano in Toscana e nel sistema di gamificazione associato.\n\nIstruzioni: Rispondi a ogni domanda basandoti esclusivamente sui dati che puoi consultare dalle seguenti fonti, unendoli se necessario:\n\n\"1 eccellenze_magliano\" - Utilizzi questo database quando ti vengono fatte domande sulle eccellenze del territorio. Ricerchi il nome dell'eccellenza e fornisci una descrizione dell'eccellenza\n\n\"2 punteggio delle eccellenze\" - Utilizzi la query oer ottenere il punteggio generale delle eccellenze.\n\n\"3 punteggio generale users\" - Utilizzi questo database per ottenere il punteggio generale degli users\n\n\"4 punteggio user\" - Utilizzi questo database per ottenere il punteggio del singolo user: {{ $json.output.user }}\n\n\"5 users - Utilizzi questo database per ottenere la classifica generale dei punteggi di tutti gli users\n\nRispondi alla domanda:\n{{ $('When chat message received').item.json.chatInput }}\n",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2.2,
-      "position": [
-        960,
-        -2448
-      ],
-      "id": "cc94b925-80fb-46ba-b6b9-a78d8c7532f5",
+      "id": "c9e39c53-7675-4f64-90c0-6fcc573dd62c",
       "name": "AI Agent1"
     },
     {
@@ -435,10 +24,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        912,
-        -2240
+        1168,
+        256
       ],
-      "id": "362be865-b93d-44e7-bef6-65fd4ed8710e",
+      "id": "678d73c6-3a2d-4f18-88a2-796e61c25009",
       "name": "Ollama Chat Model1",
       "credentials": {
         "ollamaApi": {
@@ -457,72 +46,19 @@
         },
         "table": {
           "__rl": true,
-          "value": "eccellenze_magliano",
-          "mode": "list",
-          "cachedResultName": "eccellenze_magliano"
+          "value": "=eccellenze_magliano",
+          "mode": "name"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.6,
       "position": [
-        1360,
-        -2256
+        1344,
+        256
       ],
-      "id": "23286c95-9e7d-496b-954e-bdebe0631277",
+      "id": "7aa551f4-0cde-4792-b533-ef3714ba472f",
       "name": "1 eccellenze_magliano",
-      "credentials": {
-        "postgres": {
-          "id": "LCpZD9DBViVjwmM6",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "mode": "list",
-          "value": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "users",
-          "mode": "list",
-          "cachedResultName": "users"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.6,
-      "position": [
-        1488,
-        -2256
-      ],
-      "id": "09184452-1f08-4f2d-b52b-0f6d9b7101be",
-      "name": "5 users",
-      "credentials": {
-        "postgres": {
-          "id": "LCpZD9DBViVjwmM6",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT\n    em.nome,\n    COUNT(pt.eccellenza_id) AS numero_di_foto\nFROM\n    eccellenze_magliano em\nJOIN\n    punteggi_turisti pt ON em.id = pt.eccellenza_id\nGROUP BY\n    em.nome\nORDER BY\n    numero_di_foto DESC;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.6,
-      "position": [
-        1200,
-        -2240
-      ],
-      "id": "306212bb-9544-42a3-b9dd-9a9604e8d5a9",
-      "name": "2 punteggio delle eccellenze",
       "credentials": {
         "postgres": {
           "id": "LCpZD9DBViVjwmM6",
@@ -619,111 +155,11 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1248,
-        -1392
+        1456,
+        960
       ],
-      "id": "657460ca-6d18-45d2-a7dd-179d79b8998d",
+      "id": "83117d9d-baff-4dde-8195-5a59bea3cdaa",
       "name": "inserisci user",
-      "credentials": {
-        "postgres": {
-          "id": "LCpZD9DBViVjwmM6",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "schema": {
-          "__rl": true,
-          "mode": "list",
-          "value": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "punteggi_turisti",
-          "mode": "list",
-          "cachedResultName": "punteggi_turisti"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "eccellenza_id": 5,
-            "punteggio_ottenuto": 20,
-            "turista_id": "10b45416-1905-4cda-a941-5467b2e549f5"
-          },
-          "matchingColumns": [
-            "id"
-          ],
-          "schema": [
-            {
-              "id": "id",
-              "displayName": "id",
-              "required": false,
-              "defaultMatch": true,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "turista_id",
-              "displayName": "turista_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "eccellenza_id",
-              "displayName": "eccellenza_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "punteggio_ottenuto",
-              "displayName": "punteggio_ottenuto",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "url_foto",
-              "displayName": "url_foto",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "data_scatto",
-              "displayName": "data_scatto",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        384,
-        -2256
-      ],
-      "id": "a9d65fdd-77fe-4028-8b18-42c88ccdee50",
-      "name": "inserisci punteggi",
       "credentials": {
         "postgres": {
           "id": "LCpZD9DBViVjwmM6",
@@ -739,10 +175,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        992,
-        -1200
+        1200,
+        1152
       ],
-      "id": "43515e97-72b5-4d8a-83c7-2e3449da9f81",
+      "id": "a765e343-096b-4194-a840-d44f56ac365c",
       "name": "Ollama Chat Model2",
       "credentials": {
         "ollamaApi": {
@@ -770,10 +206,10 @@
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.6,
       "position": [
-        1168,
-        -1184
+        1376,
+        1168
       ],
-      "id": "972d011b-7a88-495e-975b-0e2ad37d2d2f",
+      "id": "030f5d7f-b0f6-4de1-a802-a5baab1e617a",
       "name": "5 users1",
       "credentials": {
         "postgres": {
@@ -790,109 +226,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -16,
-        -1952
+        288,
+        64
       ],
-      "id": "8ecc498a-c197-49d7-83e4-ae6c4660b1d0",
+      "id": "7aeb77a5-dda6-464e-accd-b31fcd690f0b",
       "name": "Leggi Ultimo Messaggio3"
-    },
-    {
-      "parameters": {
-        "text": "={{ $json.chatInput }}",
-        "attributes": {
-          "attributes": [
-            {
-              "name": "user",
-              "description": "user"
-            },
-            {
-              "name": "mail",
-              "description": "mail"
-            },
-            {
-              "name": "richiesta punteggio",
-              "description": "richiesta punteggio"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
-      "typeVersion": 1.2,
-      "position": [
-        192,
-        -1760
-      ],
-      "id": "587a4d27-b6c9-4bed-b45d-7d783de20178",
-      "name": "Information Extractor1"
-    },
-    {
-      "parameters": {
-        "model": "gpt-oss:20b",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmOllama",
-      "typeVersion": 1,
-      "position": [
-        176,
-        -1600
-      ],
-      "id": "b99de26a-24c3-48f6-8e4c-07ca97b75285",
-      "name": "Ollama Model",
-      "credentials": {
-        "ollamaApi": {
-          "id": "8OMWvqHyP2rNSFWy",
-          "name": "Ollama account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "mode": "list",
-          "value": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "users",
-          "mode": "list",
-          "cachedResultName": "users"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        112,
-        -2256
-      ],
-      "id": "247e052f-2967-4c63-aa63-357bd343e4a6",
-      "name": "elenco users",
-      "alwaysOutputData": true,
-      "credentials": {
-        "postgres": {
-          "id": "LCpZD9DBViVjwmM6",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "content": "## Registrazione utenti e controllo duplicati",
-        "height": 1456,
-        "width": 1600,
-        "color": 3
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -96,
-        -2512
-      ],
-      "typeVersion": 1,
-      "id": "f291a7d6-b6e6-4d6b-87ae-68a56e9279ec",
-      "name": "Sticky Note2"
     },
     {
       "parameters": {
@@ -903,32 +241,24 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        976,
-        -1392
+        1184,
+        960
       ],
-      "id": "36055457-65b8-488a-b1c5-68ea0dbb0cb2",
+      "id": "31c33b18-e5fa-4a46-813c-1acba4d9b656",
       "name": "Registrazione utente"
     },
     {
       "parameters": {
-        "inputText": "={{ $('When chat message received').item.json.chatInput }}",
+        "inputText": "={{ $json.text }}",
         "categories": {
           "categories": [
             {
-              "category": "richiesta punteggio",
-              "description": "richiesta punteggio"
-            },
-            {
-              "category": "richiesta punteggio generale",
-              "description": "richiesta punteggio generale"
-            },
-            {
-              "category": "richiesta di registrazione",
-              "description": "richiesta di registrazione"
-            },
-            {
               "category": "richiesta informazioni",
               "description": "richiesta informazioni"
+            },
+            {
+              "category": "richiesta punteggio utente",
+              "description": "richiesta punteggio utente"
             }
           ]
         },
@@ -937,10 +267,10 @@
       "type": "@n8n/n8n-nodes-langchain.textClassifier",
       "typeVersion": 1.1,
       "position": [
-        464,
-        -1776
+        608,
+        80
       ],
-      "id": "40a495a1-1804-4615-a44e-65e13f8cfe32",
+      "id": "f5357d33-3770-4b54-aecc-e1596b34f4d1",
       "name": "Text Classifier"
     },
     {
@@ -951,45 +281,11 @@
       "type": "@n8n/n8n-nodes-langchain.lmOllama",
       "typeVersion": 1,
       "position": [
-        464,
-        -1568
+        624,
+        288
       ],
-      "id": "5bef18ec-8348-4560-bf11-74a919a20780",
+      "id": "b7158b91-3287-4ef0-858c-b7909ea20a21",
       "name": "Ollama Model2",
-      "credentials": {
-        "ollamaApi": {
-          "id": "8OMWvqHyP2rNSFWy",
-          "name": "Ollama account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        -16,
-        -1760
-      ],
-      "id": "1bfe2f42-c342-40bd-9977-81a086e85d59",
-      "name": "When chat message received",
-      "webhookId": "7ba6a1fd-18dd-4d11-b039-3f7928065b1d"
-    },
-    {
-      "parameters": {
-        "model": "gpt-oss:20b",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
-      "position": [
-        944,
-        -1584
-      ],
-      "id": "8883dc9a-e689-4e6a-bf65-d60d4f856037",
-      "name": "Ollama Chat Model3",
       "credentials": {
         "ollamaApi": {
           "id": "8OMWvqHyP2rNSFWy",
@@ -1016,10 +312,10 @@
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.6,
       "position": [
-        1088,
-        -1584
+        1264,
+        704
       ],
-      "id": "a820dd85-26a9-4473-a88f-856a5ceff47d",
+      "id": "3cef3b2e-e166-4a03-b05d-c2dca122d2bd",
       "name": "4 punteggio user1",
       "credentials": {
         "postgres": {
@@ -1030,83 +326,17 @@
     },
     {
       "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "mode": "list",
-          "value": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "users",
-          "mode": "list",
-          "cachedResultName": "users"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.6,
-      "position": [
-        1168,
-        -1888
-      ],
-      "id": "57a80d00-9638-4faa-8f56-7e2128080a92",
-      "name": "dati user",
-      "credentials": {
-        "postgres": {
-          "id": "LCpZD9DBViVjwmM6",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "gpt-oss:20b",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
-      "position": [
-        928,
-        -1888
-      ],
-      "id": "3988030f-6f25-4eb2-8fe9-61d15bdfbb23",
-      "name": "Ollama Chat Model4",
-      "credentials": {
-        "ollamaApi": {
-          "id": "8OMWvqHyP2rNSFWy",
-          "name": "Ollama account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "promptType": "define",
-        "text": "=Il tuo compito è di comunicare all'user i suoi dati\nRispondi alla domanda:\n\nuser:\n{{ $json.output.user }}\n\n",
+        "text": "=Il tuo compito è di comunicare all'user il suo punteggio_ottenuto, consulta SEMPRE il \"4 punteggio user1\" e \"Dati user 2\"\nDomanda:\n{{ $('Code').item.json.text }}\n\nUser:\n{{ $json.username }}\n\n{{ $json.first_name }}\n\n{{ $json.last_name }}\n\nRispondi in questo modo:\nCiao {{ $json.first_name }}, hai raccolto -- punti\n\n",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        960,
-        -2064
+        1184,
+        544
       ],
-      "id": "6d36b06b-b51c-4fb0-9c0b-fcbf0c0a7895",
-      "name": "dati user1"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Il tuo compito è di comunicare all'user il suo punteggio_ottenuto, consulta SEMPRE il \"4 punteggio user1\" e \"Dati user 2\" e turista_id\nRispondi alla domanda:\n\nuser:\n{{ $json.output.user }}\n\n",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2.2,
-      "position": [
-        976,
-        -1744
-      ],
-      "id": "b6674fbd-2449-4db4-95ea-1add23b7eec3",
+      "id": "a62bf035-e8dc-4a24-b2b3-100880b0236f",
       "name": "punteggio user"
     },
     {
@@ -1118,10 +348,10 @@
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.6,
       "position": [
-        1072,
-        -2240
+        1536,
+        704
       ],
-      "id": "8ea74f23-5441-4ca2-b695-36451f931011",
+      "id": "ac85b8ca-b253-4fcf-8947-0e8182a82d9b",
       "name": "3 punteggio generale users",
       "credentials": {
         "postgres": {
@@ -1149,10 +379,10 @@
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.6,
       "position": [
-        1200,
-        -1584
+        1392,
+        704
       ],
-      "id": "5fc9458c-a310-4a48-9807-97f57dcd215a",
+      "id": "ab80dc6c-d0b9-49cd-92fe-1baa2155e559",
       "name": "dati user2",
       "credentials": {
         "postgres": {
@@ -1160,15 +390,863 @@
           "name": "Postgres account"
         }
       }
+    },
+    {
+      "parameters": {
+        "content": "## Registrazione utenti e controllo duplicati",
+        "height": 400,
+        "width": 624,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1104,
+        896
+      ],
+      "typeVersion": 1,
+      "id": "359814be-70b5-4a32-b41a-a0562db9b689",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Classificatore di richieste",
+        "height": 448,
+        "width": 1072,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "1853ef81-d959-45dd-a760-8e94f857812f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Controllo punteggio utente",
+        "height": 400,
+        "width": 624,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1104,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "72c01cdb-9b73-40e5-a146-1f97a3e81850",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Informazioni su eccellenze del territorio",
+        "height": 432,
+        "width": 624,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1104,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "e53b44ef-fb72-4333-8417-bd56e24bd382",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        704
+      ],
+      "id": "b41d5998-9559-442c-b950-5ee37c2b2908",
+      "name": "IA",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lastByUser = {};\nconst updates = $json.result || [];\n\nfor (const upd of updates) {\n  const msg = upd.message;\n  if (!msg) continue;\n\n  const chatId = msg.chat.id;\n  // Salvo sempre l'ultimo messaggio per ogni utente\n  lastByUser[chatId] = msg;\n}\n\nconst results = [];\n\nfor (const chatId in lastByUser) {\n  const msg = lastByUser[chatId];\n  const from = msg.from || {};\n\n  const baseInfo = {\n    chat_id: chatId,\n    telegram_id: from.id,\n    first_name: from.first_name || \"\",\n    last_name: from.last_name || \"\",\n    username: from.username || \"\",\n    email: from.username ? from.username + \"@telegram.local\" : \"\"\n  };\n\n  if (msg.text) {\n    results.push({\n      json: {\n        ...baseInfo,\n        type: \"text\",\n        text: msg.text\n      }\n    });\n  } else if (msg.photo) {\n    const photoArray = msg.photo;\n    const fileId = photoArray[photoArray.length - 1].file_id;\n\n    results.push({\n      json: {\n        ...baseInfo,\n        type: \"photo\",\n        file_id: fileId\n      }\n    });\n  }\n}\n\nif (results.length > 0) {\n  return results;\n} else {\n  return [{ json: { info: \"nessun messaggio trovato\" } }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        272
+      ],
+      "id": "438c5c63-dd7c-4c1f-8039-986f12edaeef",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2dc7d706-ca8a-47d7-b1bb-6454bbe6320c",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "text",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        272
+      ],
+      "id": "c916c76d-34aa-4412-af7d-83ed84a0dcd3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "## Verifica qrcode",
+        "height": 832,
+        "width": 1072,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "e41b0626-b5b5-415c-af02-bf251d841ca7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        416,
+        576
+      ],
+      "id": "3bd1ed77-dd6d-41bd-8cc3-a1f90c1ee34d",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llava:34b\",\n  \"prompt\": \"Describe this image, acting as a detailed visual archivist, provide a comprehensive description of the monument and the surroundings. Your description should be precise and focus on features that are unique and identifiable. Include specific details about: Architectural Style: Describe the style (e.g., Renaissance, Baroque, Gothic, Romanesque, modern). Construction Material: Identify the primary materials (e.g., local stone, brick, marble, bronze, wood). Key Structures: Detail the main components (e.g., a multi-arched bridge, a statue on a pedestal, a fortified gate). Distinctive Features: Note any unique or specific elements (e.g., carved gargoyles, a specific inscription, decorative frescoes, a weather vane on top, a coat of arms). Surrounding Context: Describe the immediate environment (e.g., location next to a river, in a cobblestone town square, surrounded by ancient trees). Exclude any irrelevant information such as people, vehicles, or modern objects that are not part of the monument itself\",\n  \"images\": [\"{{ $json.data }}\"],\n  \"stream\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        592,
+        576
+      ],
+      "id": "56ae563e-1fb1-4b06-b6cb-cae175103ad4",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c9e2c97-54be-4f65-8718-fa8081028d18",
+              "name": "response",
+              "value": "={{ $json.response }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        736,
+        576
+      ],
+      "id": "706f65df-3ef7-48bc-9902-9dcc78ce6728",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/getFile?file_id={{ $json.file_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        576
+      ],
+      "id": "559d3325-fef4-40f2-88ce-dabc993fe558",
+      "name": "Leggi Ultimo Messaggio1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/{{ $json.result.file_path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        576
+      ],
+      "id": "543112cb-97c8-4e99-b3c1-066f83e09874",
+      "name": "Leggi Ultimo Messaggio2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        96,
+        64
+      ],
+      "id": "b9de4c8d-5a1e-44be-bb4f-c69a889147bd",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        80,
+        976
+      ],
+      "id": "1159fee6-48bb-4a69-8f4e-257800017fd5",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:v1.5"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        208,
+        1120
+      ],
+      "id": "1ed6ad6e-15de-4e78-8d99-3db015dc5e8b",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Database delle eccellenze territorio comunale",
+        "tableName": "images_vectors",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        976
+      ],
+      "id": "0d771a60-acc0-4b12-9dbc-0feca8b26677",
+      "name": "Database_eccellenze",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=images_vectors",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        1104
+      ],
+      "id": "bdafd397-6ca7-4752-8507-54d2c4ec01a3",
+      "name": "image vectors",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an intelligent AI agent that awards points when a user posts an image depicting a subject present in Database_eccellenze.\n\nRead this: {{ $json.response }}\n\nCompare the content with the entries in Database_eccellenze. Use a looser matching approach — accept even partial or approximate similarities.\n\nIf you find a match, respond exactly with:\n\nFound: <Name of the excellence>\n\n\nIf nothing even vaguely matches, remain silent.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        112,
+        784
+      ],
+      "id": "870529d4-3e02-48a3-b8c3-51b60d800c62",
+      "name": "Valutazione immagini",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $('Leggi Ultimo Messaggio3').item.json.result[0].message.chat.id }}\",\n  \"text\": \"{{ $json.output }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        544
+      ],
+      "id": "19a966b0-cad9-43ee-86f4-0c84edff2ceb",
+      "name": "Invia messaggio"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot7083883971:AAHzmWAHNlS9P3D93qEBT_AAwMqrSbCs80M/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $('Leggi Ultimo Messaggio3').item.json.result[0].message.chat.id }}\",\n  \"text\": \"{{ $('Valutazione immagini').item.json.output }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        784
+      ],
+      "id": "7645cb20-5347-48c0-a2c3-e3e5e5954fdb",
+      "name": "Invia messaggio1"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "found",
+              "description": "found"
+            },
+            {
+              "name": "not found",
+              "description": "not found"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        784
+      ],
+      "id": "1c7efa11-fad2-45e9-a627-ed1aad31b762",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        544,
+        976
+      ],
+      "id": "fb5ec1b5-8e5a-4a0b-ac24-aa4fa1062825",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        512,
+        1424
+      ],
+      "id": "f96d5262-7c62-4ebf-9344-1ae2b2aaffdf",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "filePath": "/shared/images/upload/Tarassaco_05.JPG"
+      },
+      "id": "bda2562b-68d7-4886-ab7e-7a724eac3eea",
+      "name": "Read pdf1",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "images_vectors",
+        "embeddingBatchSize": 2000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        1216,
+        1424
+      ],
+      "id": "6bf71570-d6fa-4249-ba3e-05cfc8b84aef",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:v1.5"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        1648
+      ],
+      "id": "ef0d1817-437c-4e38-9261-d3953d9cda63",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "nome_monumento",
+                "value": "Tarassaco_05.JPG"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        1648
+      ],
+      "id": "93a0d441-531e-4dab-8fd6-2cf679ed92e7",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 5000,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        1856
+      ],
+      "id": "ee0d88bf-7a15-48bb-b07e-dd0684d68db6",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llava:34b\",\n  \"prompt\": \"Describe this image, acting as a detailed visual archivist, provide a comprehensive description of the monument and the surroundings. Your description should be precise and focus on features that are unique and identifiable. Include specific details about: Architectural Style: Describe the style (e.g., Renaissance, Baroque, Gothic, Romanesque, modern). Construction Material: Identify the primary materials (e.g., local stone, brick, marble, bronze, wood). Key Structures: Detail the main components (e.g., a multi-arched bridge, a statue on a pedestal, a fortified gate). Distinctive Features: Note any unique or specific elements (e.g., carved gargoyles, a specific inscription, decorative frescoes, a weather vane on top, a coat of arms). Surrounding Context: Describe the immediate environment (e.g., location next to a river, in a cobblestone town square, surrounded by ancient trees). Exclude any irrelevant information such as people, vehicles, or modern objects that are not part of the monument itself\",\n  \"images\": [\"{{ $json.data }}\"],\n  \"stream\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        1424
+      ],
+      "id": "ecab138d-30b5-40b5-98be-ca0f6f3d5b95",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c9e2c97-54be-4f65-8718-fa8081028d18",
+              "name": "response",
+              "value": "={{ $json.response }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        1424
+      ],
+      "id": "dc510be3-e3ce-4286-8973-07a6023e3002",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "images_vectors",
+          "mode": "list",
+          "cachedResultName": "images_vectors"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        768,
+        1744
+      ],
+      "id": "3fe56906-f387-4102-8d51-2737f7df6632",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Creazione database vettoriale con immagini delle eccellenze del territorio",
+        "height": 688,
+        "width": 1728,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        1328
+      ],
+      "typeVersion": 1,
+      "id": "70067adb-50ea-4a99-8697-e0a319bd8f59",
+      "name": "Sticky Note5"
     }
   ],
   "pinData": {},
   "connections": {
-    "Read pdf1": {
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1 eccellenze_magliano": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Registrazione utente",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 users1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Registrazione utente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio3": {
       "main": [
         [
           {
-            "node": "Extract from File1",
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrazione utente": {
+      "main": [
+        [
+          {
+            "node": "inserisci user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "punteggio user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4 punteggio user1": {
+      "ai_tool": [
+        [
+          {
+            "node": "punteggio user",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "punteggio user": {
+      "main": [
+        [
+          {
+            "node": "Invia messaggio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3 punteggio generale users": {
+      "ai_tool": [
+        [
+          {
+            "node": "punteggio user",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "dati user2": {
+      "ai_tool": [
+        [
+          {
+            "node": "punteggio user",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "punteggio user",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Leggi Ultimo Messaggio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Valutazione immagini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio1": {
+      "main": [
+        [
+          {
+            "node": "Leggi Ultimo Messaggio2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
             "type": "main",
             "index": 0
           }
@@ -1179,8 +1257,74 @@
       "main": [
         [
           {
-            "node": "Read pdf1",
+            "node": "Leggi Ultimo Messaggio3",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Valutazione immagini",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Database_eccellenze",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Database_eccellenze": {
+      "ai_tool": [
+        [
+          {
+            "node": "Valutazione immagini",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valutazione immagini": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Invia messaggio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -1191,6 +1335,17 @@
         [
           {
             "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read pdf1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
             "type": "main",
             "index": 0
           }
@@ -1251,350 +1406,17 @@
           }
         ]
       ]
-    },
-    "Extract from File": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTTP Request1": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Leggi Ultimo Messaggio": {
-      "main": [
-        [
-          {
-            "node": "Leggi Ultimo Messaggio1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Leggi Ultimo Messaggio1": {
-      "main": [
-        [
-          {
-            "node": "Leggi Ultimo Messaggio2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Leggi Ultimo Messaggio2": {
-      "main": [
-        [
-          {
-            "node": "Extract from File",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Embeddings Ollama1": {
-      "ai_embedding": [
-        [
-          {
-            "node": "Eccellenze territorio",
-            "type": "ai_embedding",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields1": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ollama Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Eccellenze territorio": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "On form submission": {
-      "main": [
-        []
-      ]
-    },
-    "Ollama Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "1 eccellenze_magliano": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "5 users": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "2 punteggio delle eccellenze": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ollama Chat Model2": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Registrazione utente",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "5 users1": {
-      "ai_tool": [
-        [
-          {
-            "node": "Registrazione utente",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "inserisci user": {
-      "main": [
-        []
-      ]
-    },
-    "Leggi Ultimo Messaggio3": {
-      "main": [
-        []
-      ]
-    },
-    "Information Extractor1": {
-      "main": [
-        [
-          {
-            "node": "Text Classifier",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ollama Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Information Extractor1",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Registrazione utente": {
-      "main": [
-        [
-          {
-            "node": "inserisci user",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ollama Model2": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Text Classifier",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "When chat message received": {
-      "main": [
-        [
-          {
-            "node": "Information Extractor1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Text Classifier": {
-      "main": [
-        [
-          {
-            "node": "punteggio user",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "AI Agent1",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Registrazione utente",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "dati user1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ollama Chat Model3": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "punteggio user",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "4 punteggio user1": {
-      "ai_tool": [
-        [
-          {
-            "node": "punteggio user",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "dati user": {
-      "ai_tool": [
-        [
-          {
-            "node": "dati user1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ollama Chat Model4": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "dati user1",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "3 punteggio generale users": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "dati user2": {
-      "ai_tool": [
-        [
-          {
-            "node": "punteggio user",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "0397b2aa-94ef-4b73-b451-dd99078b5dc3",
+  "versionId": "f7c1a183-135d-4b5b-9ba4-2269419696e0",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
   },
-  "id": "gIVT0hPoqze1bKiv",
+  "id": "1XEc9IlaZbxzADIf",
   "tags": []
 }
