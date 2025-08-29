@@ -1,0 +1,595 @@
+{
+  "name": "Verifica atti_06",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un agente IA che verifica atti amministrativi del settore tecnico del Comune di Magliano in Toscana. Analizza il documento ricevuto e rispondi solo nel formato seguente, senza aggiungere altro:\n{{ $('Estrazione file').item.json.text }}\n\n\nREPORT VERIFICA ATTO - [TITOLO DOCUMENTO]\nData: [DATA]\nCUP: [SE PRESENTE]\nCIG: [SE PRESENTE]\n\n1. TITOLO-CONTENUTO-DISPOSITIVO: ✅ / ⚠️ / ❌\n[Verifica coerenza interna fra il titolo atto, il contenuto atto ed il dispositivo dell'atto]\n\n2. MOTIVAZIONI: ✅ / ⚠️ / ❌\n[Dettagli, se le motivazioni non sono ritenute sufficienti le produci]\n\n3. CALCOLI: ✅ / ⚠️ / ❌\n[Dettagli con formule, controlla somme, IVA, percentuale subappalti se presenti]\n\n4. FORMA: ✅ / ⚠️ / ❌\n[Errori ortografici, date, protocolli]\n\n\n\nRACCOMANDAZIONI:\n- [Correzioni prioritarie]\n\nSTATO FINALE: ✅ APPROVABILE / ⚠️ MINORI / ❌ NECESSARIE\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -352
+      ],
+      "id": "3d18615b-0676-49c8-a099-3ccdcf7fd1e4",
+      "name": "Verifica atto1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output;\n\nlet html = aiOutput\n   .replace(/\\n/g, '<br>')\n   .replace(/✅/g, '<span style=\"color:green\">✅</span>')\n   .replace(/⚠️/g, '<span style=\"color:orange\">⚠️</span>')\n   .replace(/❌/g, '<span style=\"color:red\">❌</span>');\n\nreturn [{\n   htmlContent: html,\n   plainContent: aiOutput\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        -256
+      ],
+      "id": "86360bc6-afac-429f-ba3d-b2de21c38b15",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "formTitle": "Invio atto da controllare",
+        "formDescription": "Allegare atto da controllare in formato pdf",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "data",
+              "fieldType": "file",
+              "acceptFileTypes": "pdf"
+            },
+            {
+              "fieldLabel": "email",
+              "fieldType": "email"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        640,
+        -256
+      ],
+      "id": "dd1ba62d-094a-4632-9caf-a7d2645f9e74",
+      "name": "On form submission",
+      "webhookId": "d9e20d4d-c172-4451-ab05-11a3d3bc853d"
+    },
+    {
+      "parameters": {
+        "text": "=Analizza il seguente testo amministrativo:\n\n\"{{ $json.text }}\"\n\nEstrai in modo strutturato i seguenti elementi, se presenti:\n\n- **Titolo atto**: la tipologia e denominazione dell’atto (es. “Determinazione a contrattare n. … del …”).\n- **Oggetto atto**: la descrizione sintetica riportata dopo la voce “Oggetto”.\n- **Premesse atto**: la parte introduttiva che inizia con “Premesso che …” e “Considerato che …”.\n- **Motivazioni atto**: le motivazioni giuridiche, tecniche ed economiche, comprese le deliberazioni richiamate, riportate nelle sezioni “Premesso”, “Considerato”, “Dato atto”, “Richiamate”, “Visti”.\n- **Dispositivo atto**: la parte deliberativa/decisoria che segue “DETERMINA”, con l’elenco delle decisioni assunte (approvazioni, affidamenti, impegni di spesa, nomine, ecc.).",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "dispositivo atto",
+              "description": "dispositivo atto"
+            },
+            {
+              "name": "oggetto atto",
+              "description": "oggetto atto"
+            },
+            {
+              "name": "titolo atto",
+              "description": "titolo atto"
+            },
+            {
+              "name": "motivazioni atto",
+              "description": "motivazioni atto"
+            },
+            {
+              "name": "premesse atto",
+              "description": "premesse atto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1088,
+        -352
+      ],
+      "id": "205586a5-0ba4-455f-8534-72138d4a1303",
+      "name": "Estrattore di informazioni"
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "={{ $('On form submission').item.json.email }}",
+        "subject": "=Verifica atto: {{ $('Estrattore di informazioni').item.json.output['oggetto atto'] }}",
+        "html": "={{ $json.htmlContent }}",
+        "options": {
+          "attachments": "={{ $('On form submission').item.json.data[0].filename }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2016,
+        -256
+      ],
+      "id": "83d7bee5-2298-4a25-abb5-e61f1f0101ce",
+      "name": "Invio mail al richiedente",
+      "webhookId": "dff3a31d-5ffd-46a6-a7d5-13163f3092c0",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        864,
+        -256
+      ],
+      "id": "bf8c0015-3ecd-40eb-9620-236ae0f48eca",
+      "name": "Estrazione file"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        -128
+      ],
+      "id": "d774a1eb-f442-445c-a462-f12062cb5ce1",
+      "name": "GPT-OSS:20b",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -128
+      ],
+      "id": "9c0172f3-7eca-4b07-9133-a9e430246fda",
+      "name": "GPT-OSS:20b1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "downloadAttachments": true,
+        "dataPropertyAttachmentsPrefixName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        160
+      ],
+      "id": "fa212707-1fe7-4f00-99ea-a24c70e9d1c3",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "7bP3tFPix1yheYdL",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        160
+      ],
+      "id": "f4ac092b-d89b-430c-97b6-506212e36cb2",
+      "name": "Estrazione file1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un agente IA che verifica atti amministrativi del settore tecnico del Comune di Magliano in Toscana. Analizza il documento ricevuto e rispondi solo nel formato seguente, senza aggiungere altro:\n{{ $('Estrazione file1').item.json.text }}\n\n\nREPORT VERIFICA ATTO - [TITOLO DOCUMENTO]\nData: [DATA]\nCUP: [SE PRESENTE]\nCIG: [SE PRESENTE]\n\n1. TITOLO-CONTENUTO-DISPOSITIVO: ✅ / ⚠️ / ❌\n[Verifica coerenza interna fra il titolo atto, il contenuto atto ed il dispositivo dell'atto]\n\n2. MOTIVAZIONI: ✅ / ⚠️ / ❌\n[Dettagli, se le motivazioni non sono ritenute sufficienti le produci]\n\n3. CALCOLI: ✅ / ⚠️ / ❌\n[Dettagli con formule, controlla somme, IVA, percentuale subappalti se presenti]\n\n4. FORMA: ✅ / ⚠️ / ❌\n[Errori ortografici, date, protocolli]\n\n\n\nRACCOMANDAZIONI:\n- [Correzioni prioritarie]\n\nSTATO FINALE: ✅ APPROVABILE / ⚠️ MINORI / ❌ NECESSARIE\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        160
+      ],
+      "id": "4b6a251b-34cc-45ac-9cd9-d9e7a21a685a",
+      "name": "Verifica atto"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output;\n\nlet html = aiOutput\n   .replace(/\\n/g, '<br>')\n   .replace(/✅/g, '<span style=\"color:green\">✅</span>')\n   .replace(/⚠️/g, '<span style=\"color:orange\">⚠️</span>')\n   .replace(/❌/g, '<span style=\"color:red\">❌</span>');\n\nreturn [{\n   htmlContent: html,\n   plainContent: aiOutput\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        160
+      ],
+      "id": "f993e13f-7c8a-41ac-869d-7434e26ebfeb",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "text": "=Analizza il seguente testo amministrativo:\n\"{{ $json.text }}\"\n\nEstrai in modo strutturato i seguenti elementi, se presenti:\n\n- **Titolo atto**.\n- **Oggetto atto**: la descrizione sintetica riportata dopo la voce “Oggetto”.\n- **Premesse atto**: la parte introduttiva che inizia con “Premesso che …” e “Considerato che …”.\n- **Motivazioni atto**: le motivazioni giuridiche, tecniche ed economiche, comprese le deliberazioni richiamate, riportate nelle sezioni “Premesso”, “Considerato”, “Dato atto”, “Richiamate”, “Visti”.\n- **Dispositivo atto**: la parte deliberativa/decisoria che segue “DETERMINA”, con l’elenco delle decisioni assunte (approvazioni, affidamenti, impegni di spesa, nomine, ecc.).",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "dispositivo atto",
+              "description": "dispositivo atto"
+            },
+            {
+              "name": "oggetto atto",
+              "description": "oggetto atto"
+            },
+            {
+              "name": "titolo atto",
+              "description": "titolo atto"
+            },
+            {
+              "name": "motivazioni atto",
+              "description": "motivazioni atto"
+            },
+            {
+              "name": "premesse atto",
+              "description": "premesse atto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1296,
+        160
+      ],
+      "id": "c9310426-aa9f-495a-b740-c9b5dfdbf702",
+      "name": "Estrattore di informazioni1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "={{ $('Email Trigger (IMAP)').item.json.metadata['return-path'] }}",
+        "subject": "=Verifica atto: {{ $('Estrattore di informazioni1').item.json.output['titolo atto'] }}",
+        "html": "={{ $json.htmlContent }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2224,
+        160
+      ],
+      "id": "816f0dcf-3a69-4b9e-8e91-1de72d2a25b9",
+      "name": "Invio mail al richiedente1",
+      "webhookId": "dff3a31d-5ffd-46a6-a7d5-13163f3092c0",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        384
+      ],
+      "id": "9aaf079b-e086-472f-9d0a-98ba881440b5",
+      "name": "GPT-OSS:20b2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        384
+      ],
+      "id": "66c200ef-18c1-4a45-8222-ba9b69680d37",
+      "name": "GPT-OSS:20b3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Controllo atto tramite utilizzo di form ",
+        "height": 448,
+        "width": 1968,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        -432
+      ],
+      "typeVersion": 1,
+      "id": "40ecb763-3d03-4b42-a86b-483434d78301",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Controllo atto tramite utilizzo di mail",
+        "height": 448,
+        "width": 1968,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        80
+      ],
+      "typeVersion": 1,
+      "id": "5b1c7a90-039a-4b3a-af5c-9b16c3731677",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0e4068f-0da0-4a38-b3dc-05d4cc8862fb",
+              "leftValue": "={{ $json.metadata['thread-topic'] }}",
+              "rightValue": "Verifica atto",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        160
+      ],
+      "id": "241e7fa2-43db-47b8-bb38-85f01a715605",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Verifica atto1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Invio mail al richiedente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Estrazione file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estrattore di informazioni": {
+      "main": [
+        [
+          {
+            "node": "Verifica atto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invio mail al richiedente": {
+      "main": [
+        []
+      ]
+    },
+    "Estrazione file": {
+      "main": [
+        [
+          {
+            "node": "Estrattore di informazioni",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-OSS:20b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Estrattore di informazioni",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-OSS:20b1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Verifica atto1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica atto": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Invio mail al richiedente1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estrattore di informazioni1": {
+      "main": [
+        [
+          {
+            "node": "Verifica atto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-OSS:20b2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Estrattore di informazioni1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-OSS:20b3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Verifica atto",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estrazione file1": {
+      "main": [
+        [
+          {
+            "node": "Estrattore di informazioni1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Estrazione file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3768de3b-2059-48fb-a68a-bdb4d0c8292e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "ZswidgMGcR9a1wQl",
+  "tags": []
+}

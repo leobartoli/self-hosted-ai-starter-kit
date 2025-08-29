@@ -1,0 +1,445 @@
+{
+  "name": "Verifica atti_05",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        32
+      ],
+      "id": "9c0172f3-7eca-4b07-9133-a9e430246fda",
+      "name": "Ollama Chat Model2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -192
+      ],
+      "id": "bf8c0015-3ecd-40eb-9620-236ae0f48eca",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }} estrai titolo atto, dispositivo atto, oggetto atto, motivazioni atto, premesse atto",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "dispositivo atto",
+              "description": "dispositivo atto"
+            },
+            {
+              "name": "oggetto atto",
+              "description": "oggetto atto"
+            },
+            {
+              "name": "titolo atto",
+              "description": "titolo atto"
+            },
+            {
+              "name": "motivazioni atto",
+              "description": "motivazioni atto"
+            },
+            {
+              "name": "premesse atto",
+              "description": "premesse atto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        -192
+      ],
+      "id": "205586a5-0ba4-455f-8534-72138d4a1303",
+      "name": "Information Extractor1"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        944,
+        32
+      ],
+      "id": "d774a1eb-f442-445c-a462-f12062cb5ce1",
+      "name": "Ollama Chat Model3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "filePath": "/shared/images/upload/COMPLETAMENTO VIA GARIBALDI - affidamento PE+DL strutturale e PSC+CSE Bertini Gabriele.pdf"
+      },
+      "id": "ba00e9ef-0111-4670-ad70-c111bf40f1b4",
+      "name": "Read pdf1",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "magliano.settoretecnico@gmail.com",
+        "toEmail": "leonardo.bartoli@comune.maglianointoscana.gr.it",
+        "subject": "=Verifica atto: {{ $('Information Extractor1').item.json.output['oggetto atto'] }}",
+        "html": "={{ $json.htmlContent }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1792,
+        -192
+      ],
+      "id": "83d7bee5-2298-4a25-abb5-e61f1f0101ce",
+      "name": "Notifica Interna all'Ufficio",
+      "webhookId": "dff3a31d-5ffd-46a6-a7d5-13163f3092c0",
+      "credentials": {
+        "smtp": {
+          "id": "2Ev9y9tlQno3rjNP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un agente IA che verifica atti amministrativi del settore tecnico del Comune di Magliano in Toscana. Analizza il documento ricevuto e rispondi solo nel formato seguente, senza aggiungere altro:\n{{ $('Extract from File1').item.json.text }}\n\n\nREPORT VERIFICA ATTO - [TITOLO DOCUMENTO]\nData: [DATA]\nCUP: [SE PRESENTE]\nCIG: [SE PRESENTE]\n\n1. TITOLO-CONTENUTO-DISPOSITIVO: ✅ / ⚠️ / ❌\n[Dettagli]\n\n2. CALCOLI: ✅ / ⚠️ / ❌\n[Dettagli con formule, controlla somme, IVA, percentuale subappalti = (subappalto ÷ totale) × 100, segnala se >50%]\n\n3. FORMA: ✅ / ⚠️ / ❌\n[Errori ortografici, date, protocolli, riferimenti normativi]\n\nRACCOMANDAZIONI:\n- [Correzioni prioritarie]\n\nSTATO FINALE: ✅ APPROVABILE / ⚠️ MINORI / ❌ NECESSARIE\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        -192
+      ],
+      "id": "3d18615b-0676-49c8-a099-3ccdcf7fd1e4",
+      "name": "Verifica atto1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output;\n\nlet html = aiOutput\n   .replace(/\\n/g, '<br>')\n   .replace(/✅/g, '<span style=\"color:green\">✅</span>')\n   .replace(/⚠️/g, '<span style=\"color:orange\">⚠️</span>')\n   .replace(/❌/g, '<span style=\"color:red\">❌</span>');\n\nreturn [{\n   htmlContent: html,\n   plainContent: aiOutput\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        -192
+      ],
+      "id": "86360bc6-afac-429f-ba3d-b2de21c38b15",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7560736005:AAGKpm-WlfUZ_GcUdG7uGJmAADJkKkxfzRM/getFile?file_id={{ $('Leggi Ultimo Messaggio').item.json.result[5].message.document.file_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        -672
+      ],
+      "id": "873d74da-aa7a-447f-a422-2275b409807d",
+      "name": "Leggi Ultimo Messaggio1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot7560736005:AAGKpm-WlfUZ_GcUdG7uGJmAADJkKkxfzRM/{{ $json.result.file_path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        -672
+      ],
+      "id": "efaf2064-d510-415c-ab28-5b6bfbdafa30",
+      "name": "Leggi Ultimo Messaggio2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7560736005:AAGKpm-WlfUZ_GcUdG7uGJmAADJkKkxfzRM/getUpdates",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        -672
+      ],
+      "id": "b45ff0f6-e25b-4a98-ae64-8937d0554933",
+      "name": "Leggi Ultimo Messaggio"
+    },
+    {
+      "parameters": {
+        "jsCode": "const lastByUser = {};\nconst updates = $json.result || [];\n\nfor (const upd of updates) {\n  const msg = upd.message;\n  if (!msg) continue;\n\n  const chatId = msg.chat.id;\n  // Salvo sempre l'ultimo messaggio per ogni utente\n  lastByUser[chatId] = msg;\n}\n\nconst results = [];\n\nfor (const chatId in lastByUser) {\n  const msg = lastByUser[chatId];\n  const from = msg.from || {};\n\n  const baseInfo = {\n    chat_id: chatId,\n    telegram_id: from.id,\n    first_name: from.first_name || \"\",\n    last_name: from.last_name || \"\",\n    username: from.username || \"\",\n    email: from.username ? from.username + \"@telegram.local\" : \"\"\n  };\n\n  if (msg.text) {\n    results.push({\n      json: {\n        ...baseInfo,\n        type: \"text\",\n        text: msg.text\n      }\n    });\n  } else if (msg.photo) {\n    const photoArray = msg.photo;\n    const fileId = photoArray[photoArray.length - 1].file_id;\n\n    results.push({\n      json: {\n        ...baseInfo,\n        type: \"photo\",\n        file_id: fileId\n      }\n    });\n  }\n}\n\nif (results.length > 0) {\n  return results;\n} else {\n  return [{ json: { info: \"nessun messaggio trovato\" } }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -672
+      ],
+      "id": "0f7c6af0-0700-49c5-ba6f-ff2c0fb501dc",
+      "name": "Code2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -672
+      ],
+      "id": "3eae358e-34b4-4113-a68f-673aebcd8a8b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot7560736005:AAGKpm-WlfUZ_GcUdG7uGJmAADJkKkxfzRM/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $('Leggi Ultimo Messaggio').item.json.result[0].message.from.id }}\",\n  \"text\": \"Atto verificato\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        -752
+      ],
+      "id": "8130aebe-b72b-4bda-b4bd-1e07b25d3f49",
+      "name": "Invia messaggio1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/shared/images/upload/COMPLETAMENTO VIA GARIBALDI - affidamento PE+DL strutturale e PSC+CSE Bertini Gabriele.pdf",
+        "options": {
+          "fileExtension": "pdf"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -192
+      ],
+      "id": "437f0f98-fcca-433a-b368-d01571a6c905",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "filtersUI": {
+          "values": {
+            "filterBy": "search",
+            "search": "mara"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -464
+      ],
+      "id": "645ddff9-b891-4894-9f44-b1c52675aae3",
+      "name": "Get many messages",
+      "webhookId": "7720e0a7-524a-4cf8-9800-e3c1a6a4651f",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qeRkH8ioImf9F7IY",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Verifica atto1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor1": {
+      "main": [
+        [
+          {
+            "node": "Verifica atto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read pdf1": {
+      "main": [
+        []
+      ]
+    },
+    "Verifica atto1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Notifica Interna all'Ufficio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio1": {
+      "main": [
+        [
+          {
+            "node": "Leggi Ultimo Messaggio2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio2": {
+      "main": [
+        [
+          {
+            "node": "Read pdf1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Invia messaggio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Ultimo Messaggio": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Leggi Ultimo Messaggio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Leggi Ultimo Messaggio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aba4521b-600d-4015-82f6-0573fe062022",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "ZswidgMGcR9a1wQl",
+  "tags": []
+}
