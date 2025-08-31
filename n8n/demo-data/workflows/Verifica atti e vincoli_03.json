@@ -1,0 +1,1466 @@
+{
+  "name": "Verifica atti e vincoli_03",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        160
+      ],
+      "id": "f4ac092b-d89b-430c-97b6-506212e36cb2",
+      "name": "Estrazione file1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un agente IA che verifica atti amministrativi del settore tecnico del Comune di Magliano in Toscana. Analizza il documento ricevuto e rispondi solo nel formato seguente, senza aggiungere altro:\n{{ $('Estrazione file1').item.json.text }}\n\n\nREPORT VERIFICA ATTO - [TITOLO DOCUMENTO]\nData: [DATA]\nCUP: [SE PRESENTE]\nCIG: [SE PRESENTE]\n\n1. TITOLO-CONTENUTO-DISPOSITIVO: ✅ / ⚠️ / ❌\n[Verifica coerenza interna fra il titolo atto, il contenuto atto ed il dispositivo dell'atto]\n\n2. MOTIVAZIONI: ✅ / ⚠️ / ❌\n[Dettagli, se le motivazioni non sono ritenute sufficienti le produci]\n\n3. CALCOLI: ✅ / ⚠️ / ❌\n[Dettagli con formule, controlla somme, IVA, percentuale subappalti se presenti]\n\n4. FORMA: ✅ / ⚠️ / ❌\n[Errori ortografici, date, protocolli]\n\n\n\nRACCOMANDAZIONI:\n- [Correzioni prioritarie]\n\nSTATO FINALE: ✅ APPROVABILE / ⚠️ MINORI / ❌ NECESSARIE\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        160
+      ],
+      "id": "4b6a251b-34cc-45ac-9cd9-d9e7a21a685a",
+      "name": "Verifica atto"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output;\n\nlet html = aiOutput\n   .replace(/\\n/g, '<br>')\n   .replace(/✅/g, '<span style=\"color:green\">✅</span>')\n   .replace(/⚠️/g, '<span style=\"color:orange\">⚠️</span>')\n   .replace(/❌/g, '<span style=\"color:red\">❌</span>');\n\nreturn [{\n   htmlContent: html,\n   plainContent: aiOutput\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        160
+      ],
+      "id": "f993e13f-7c8a-41ac-869d-7434e26ebfeb",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "text": "=Analizza il seguente testo amministrativo:\n\"{{ $json.text }}\"\n\nEstrai in modo strutturato i seguenti elementi, se presenti:\n\n- **Titolo atto**.\n- **Oggetto atto**: la descrizione sintetica riportata dopo la voce “Oggetto”.\n- **Premesse atto**: la parte introduttiva che inizia con “Premesso che …” e “Considerato che …”.\n- **Motivazioni atto**: le motivazioni giuridiche, tecniche ed economiche, comprese le deliberazioni richiamate, riportate nelle sezioni “Premesso”, “Considerato”, “Dato atto”, “Richiamate”, “Visti”.\n- **Dispositivo atto**: la parte deliberativa/decisoria che segue “DETERMINA”, con l’elenco delle decisioni assunte (approvazioni, affidamenti, impegni di spesa, nomine, ecc.).",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "dispositivo atto",
+              "description": "dispositivo atto"
+            },
+            {
+              "name": "oggetto atto",
+              "description": "oggetto atto"
+            },
+            {
+              "name": "titolo atto",
+              "description": "titolo atto"
+            },
+            {
+              "name": "motivazioni atto",
+              "description": "motivazioni atto"
+            },
+            {
+              "name": "premesse atto",
+              "description": "premesse atto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1296,
+        160
+      ],
+      "id": "c9310426-aa9f-495a-b740-c9b5dfdbf702",
+      "name": "Estrattore di informazioni1"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        384
+      ],
+      "id": "9aaf079b-e086-472f-9d0a-98ba881440b5",
+      "name": "GPT-OSS:20b2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        384
+      ],
+      "id": "66c200ef-18c1-4a45-8222-ba9b69680d37",
+      "name": "GPT-OSS:20b3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Controllo bozze di atti",
+        "height": 448,
+        "width": 2112,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        80
+      ],
+      "typeVersion": 1,
+      "id": "5b1c7a90-039a-4b3a-af5c-9b16c3731677",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0e4068f-0da0-4a38-b3dc-05d4cc8862fb",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Verifica atto",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        160
+      ],
+      "id": "241e7fa2-43db-47b8-bb38-85f01a715605",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "output": "raw",
+        "filters": {
+          "readStatus": "unread"
+        },
+        "options": {
+          "attachmentsPrefix": "data",
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        656,
+        160
+      ],
+      "id": "b45ca9a7-d29c-4e37-b9db-3d27df1f48e0",
+      "name": "Microsoft Outlook Trigger",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qeRkH8ioImf9F7IY",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Microsoft Outlook Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "message": "={{ $json.htmlContent }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        160
+      ],
+      "id": "2fe676e8-fd50-40ed-a52d-b4b54e7d7dd8",
+      "name": "Reply to a message",
+      "webhookId": "0a1cc969-ca91-4112-9494-0eada40073d6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qeRkH8ioImf9F7IY",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        864
+      ],
+      "id": "63d29682-decf-473d-8941-3b61acad426f",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nodo Formattazione modificato - Template email professionale CORRETTO\n\n// Leggi il messaggio dei vincoli e i dati catastali\nconst messaggioVincoli = items[0]?.json?.messaggio_vincoli;\nconst foglio = $('Information Extractor1').item.json.output.foglio;\nconst mappale = $('Information Extractor1').item.json.output.mappale;\n\n// Controllo di sicurezza\nif (!messaggioVincoli || !foglio || !mappale) {\n  return [{\n    json: {\n      error: 'Dati mancanti per la formattazione email.'\n    }\n  }];\n}\n\n// Mappatura dei vincoli ai riferimenti legali completi\nconst vincoliMapping = {\n    'costa': 'DLgs 42/2004, articolo 142, comma1, lettera a) - Territori costieri.',\n    'laghi': 'DLgs 42/2004, articolo 142, comma1, lettera b) - Territori contermini ai laghi.',\n    'fiumi': 'DLgs 42/2004, articolo 142, comma1, lettera c) - Fiumi, torrenti, corsi d\\'acqua.',\n    'contigua': 'DLgs 42/2004, articolo 142, comma1, lettera f) - Parco Regionale e relativa area contigua.',\n    'boschi': 'DLgs 42/2004, articolo 142, comma1, lettera g) - Area e territori coperti da foreste e boschi.',\n    'interesse_archeologico': 'DLgs 42/2004, articolo 142, comma1, lettera m) - Zone di interesse archeologico.',\n    'capitana': 'DLgs 42/2004, articolo 136, lettera d) - DM 13/2019 - Zona a nord dell\\'abitato di Magliano in Toscana - Colline della Capitana.',\n    'parco': 'DLgs 42/2004, articolo 136 - DM 26/09/1962 - Zona dei Monti dell\\'Uccellina, compresa parte della limitrofa pianura.',\n    'pereta': 'DLgs 42/2004, articolo 136 - DM 16/05/1974 - Zona di Pereta sita nel territorio del comune di Magliano in Toscana.',\n    'magliano': 'DLgs 42/2004, articolo 136 - DM 07/12/1973 - Centro abitato e zone circostanti del comune di Magliano in Toscana.',\n    'idrogeologico': 'Vincolo idrogeologico'\n};\n\n// Funzione che formatta il messaggio in HTML professionale\nfunction formatEmailHtml(messaggio, foglio, mappale) {\n  // Crea la struttura base dell'email\n  const baseHtml = `\n    <!DOCTYPE html>\n    <html>\n    <head>\n      <meta charset=\"UTF-8\">\n      <title>Vincoli Paesaggistici - Comune di Magliano in Toscana</title>\n    </head>\n    <body style=\"font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f9f9f9;\">\n      <div style=\"max-width: 700px; margin: 0 auto; background: white; border: 1px solid #ddd; border-radius: 5px; padding: 30px;\">\n        \n        <div style=\"text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 25px;\">\n          <h1 style=\"margin: 0; font-size: 20px; color: #333;\">\n            Comune di Magliano in Toscana\n          </h1>\n          <p style=\"margin: 5px 0 0 0; font-size: 14px; color: #666;\">\n            Settore Tecnico\n          </p>\n        </div>\n        \n        <div>\n          <p><strong>Oggetto:</strong> Rilascio informazioni vincoli paesaggistici e idrogeologico - Foglio ${foglio} Mappale ${mappale}</p>\n          \n          <p>Gentile richiedente,</p>\n          \n          <p>con riferimento alla sua richiesta di informazioni sui vincoli paesaggistici e idrogeologici, si comunica quanto segue:</p>\n          \n          <p><strong>ESITO DELLA RICERCA:</strong><br>\n          Il nostro sistema ha elaborato la sua domanda relativa al foglio catastale ${foglio} e mappale ${mappale} e dalle informazioni che ci ha fornito risulta quanto segue:</p>\n          \n          <!-- SPAZIO PER IL CONTENUTO VARIABILE -->\n          \n          <p><strong>VALIDITÀ DELLE INFORMAZIONI:</strong><br>\n          I dati forniti sono estratti dal database ufficiale del Comune e hanno valore informativo alla data odierna.</p>\n          \n          <p>Si resta a disposizione per ogni chiarimento.</p>\n          \n          <div style=\"margin-top: 30px; text-align: right;\">\n            <p style=\"margin: 0;\"><strong>Arch. Bartoli Leonardo</strong></p>\n            <p style=\"margin: 0; font-style: italic; font-size: 14px;\">Responsabile Settore Tecnico</p>\n            <p style=\"margin: 0; font-size: 14px;\">Comune di Magliano in Toscana</p>\n          </div>\n        </div>\n        \n      </div>\n    </body>\n    </html>\n  `;\n  \n  let variabileContenuto = '';\n  \n  // Caso 1: Foglio/mappale non trovati nel database\n  if (messaggio.includes('non risultano dati')) {\n    variabileContenuto = `\n      <p>I dati forniti non producono risultati (dati inesatti o particelle che nel frattempo sono state frazionate, eliminate, sostituite con nuove, ecc.)</p>\n    `;\n  }\n  // Caso 2: Nessun vincolo trovato per il foglio/mappale esistente - PATTERN MULTIPLI\n  else if (messaggio.includes('Nessun vincolo paesaggistico o idrogeologico presente') || \n           messaggio.includes('non sono stati trovati vincoli paesaggistici né idrogeologici')) {\n    variabileContenuto = `\n      <p><strong>Nessun vincolo paesaggistico o idrogeologico presente.</strong></p>\n    `;\n  }\n  // Caso 3: Vincoli presenti\n  else if (messaggio.includes('sono presenti i seguenti vincoli paesaggistici:')) {\n    const vincoliPaesPart = messaggio.split('Vincoli Paesaggistici:')[1].split('Vincolo Idrogeologico:')[0].trim();\n    const vincoloIdroPart = messaggio.split('Vincolo Idrogeologico:')[1].trim();\n    \n    let vincoliPaesList = '';\n    if (vincoliPaesPart.length > 0) {\n        // Converti i nomi semplici in riferimenti legali completi\n        const vincoliPaesArray = vincoliPaesPart.split(',').map(v => v.trim().toLowerCase());\n        const mappedVincoli = vincoliPaesArray.map(v => `<li>${vincoliMapping[v] || v}</li>`).join('');\n        vincoliPaesList = `\n            <ul>\n                ${mappedVincoli}\n            </ul>\n        `;\n    } else {\n        vincoliPaesList = '<p>Nessun vincolo paesaggistico presente.</p>';\n    }\n\n    let vincoloIdroList = '';\n    if (vincoloIdroPart.length > 0) {\n        // Mappa il nome semplice a un riferimento legale, se presente\n        const mappedIdro = vincoloIdroPart.toLowerCase();\n        vincoloIdroList = `\n            <ul>\n                <li>${vincoliMapping[mappedIdro] || mappedIdro}</li>\n            </ul>\n        `;\n    } else {\n        vincoloIdroList = '<p>Nessun vincolo idrogeologico presente.</p>';\n    }\n    \n    if (vincoliPaesPart.length > 0 || vincoloIdroPart.length > 0) {\n      variabileContenuto = `\n        <p><strong>L'area è soggetta ai seguenti vincoli:</strong></p>\n        <p><strong>Vincoli Paesaggistici:</strong></p>${vincoliPaesList}\n        <p><strong>Vincolo Idrogeologico:</strong></p>${vincoloIdroList}\n      `;\n    }\n  }\n  \n  // Inserisci il contenuto variabile nella struttura base\n  return baseHtml.replace('<!-- SPAZIO PER IL CONTENUTO VARIABILE -->', variabileContenuto);\n}\n\n// Genera l'HTML formattato\nconst emailHtml = formatEmailHtml(messaggioVincoli, foglio, mappale);\n\n// Restituisci l'output\nreturn [{\n  json: {\n    email_html: emailHtml,\n    messaggio_vincoli: messaggioVincoli\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        688
+      ],
+      "id": "6f8b669b-993b-40f7-9592-3bc2f9042577",
+      "name": "Formattazione1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=n8n-vincoli",
+          "mode": "name"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "foglio",
+              "value": "={{ $('Information Extractor1').item.json.output.foglio }}"
+            },
+            {
+              "column": "mappale",
+              "value": "={{ $('Information Extractor1').item.json.output.mappale }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1760,
+        688
+      ],
+      "id": "1d5b6ab6-4a13-4583-a53a-0b2f6a7d2035",
+      "name": "Vincoli paesaggistici1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "=leggi {{ $json.bodyPreview }} ed estrai foglio, mappale. Se presenti più fogli e mappali scegli i primi",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "foglio",
+              "description": "foglio catastale"
+            },
+            {
+              "name": "mappale",
+              "description": "mappale catastale"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1088,
+        688
+      ],
+      "id": "b1439921-87ff-4f6d-8d5d-a30f00e352a6",
+      "name": "Information Extractor1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE protocollo_counter\nSET ultimo_numero = ultimo_numero + 1\nWHERE anno = EXTRACT(YEAR FROM CURRENT_DATE)\nRETURNING ultimo_numero;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1360,
+        688
+      ],
+      "id": "491ff11e-5882-452d-8c30-c62eaef982fa",
+      "name": "Assegnazione protocollo1",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=segnalazioni",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome": "={{ $('Microsoft Outlook Trigger1').item.json.from.emailAddress.name }}",
+            "cognome": "={{ $('Microsoft Outlook Trigger1').item.json.from.emailAddress.name }}",
+            "data": "=2025",
+            "numero_protocollo": "={{ $json.ultimo_numero }}",
+            "oggetto": "=",
+            "ufficio_competente": "Ufficio vincoli"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cognome",
+              "displayName": "cognome",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "indirizzo",
+              "displayName": "indirizzo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "canale",
+              "displayName": "canale",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipologia",
+              "displayName": "tipologia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "oggetto",
+              "displayName": "oggetto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "descrizione",
+              "displayName": "descrizione",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "urgenza",
+              "displayName": "urgenza",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dati_catastali",
+              "displayName": "dati_catastali",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ufficio_competente",
+              "displayName": "ufficio_competente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "priorita",
+              "displayName": "priorita",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "telefono_ufficio",
+              "displayName": "telefono_ufficio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email_ufficio",
+              "displayName": "email_ufficio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tempi_gestione",
+              "displayName": "tempi_gestione",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "numero_protocollo",
+              "displayName": "numero_protocollo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "documenti_richiesti",
+              "displayName": "documenti_richiesti",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "risposta_cittadino",
+              "displayName": "risposta_cittadino",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "stato",
+              "displayName": "stato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "embedding",
+              "displayName": "embedding",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "options",
+              "canBeUsedToMatch": true,
+              "options": [],
+              "removed": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "options",
+              "canBeUsedToMatch": true,
+              "options": [],
+              "removed": true
+            },
+            {
+              "id": "metadata",
+              "displayName": "metadata",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "options",
+              "canBeUsedToMatch": true,
+              "options": [],
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1552,
+        688
+      ],
+      "id": "d0aac2e7-9dad-4814-920b-844da479aea0",
+      "name": "Salva in Database2",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Verifica se ci sono risultati dal database\nconst inputData = $input.all();\n\n// Recupera foglio e mappale dal nodo Information Extractor\nconst foglio = $('Information Extractor1').item.json.output.foglio;\nconst mappale = $('Information Extractor1').item.json.output.mappale;\n\nlet messaggioVincoli = '';\n\n// Controlla se sono stati trovati record nel database\nif (!inputData || inputData.length === 0) {\n    // Nessun record trovato - foglio/mappale non esistente\n    messaggioVincoli = `non risultano dati, il foglio catastale ${foglio} e il mappale ${mappale} non producono risultati (dati inesatti o particelle che nel frattempo sono state frazionate, eliminate, sostituite con nuove, ecc.)`;\n} else {\n    // Record trovato, verifica se ha un ID valido\n    const firstItem = inputData[0]?.json;\n    \n    if (!firstItem || !firstItem.id) {\n        // Record vuoto o senza ID - foglio/mappale non esistente\n        messaggioVincoli = `non risultano dati, il foglio catastale ${foglio} e il mappale ${mappale} non producono risultati (dati inesatti o particelle che nel frattempo sono state frazionate, eliminate, sostituite con nuove, ecc.)`;\n    } else {\n        // Record valido trovato, verifica i vincoli\n        const vincoliPaesaggistici = [\n            firstItem.paes_interesse_archeologico,\n            firstItem.paes_boschi,\n            firstItem.paes_costa,\n            firstItem.paes_fiumi,\n            firstItem.paes_laghi,\n            firstItem.paes_area_contigua_parco,\n            firstItem.paes_dm_capitana,\n            firstItem['paes__dm_parco'],\n            firstItem.paes_dm_pereta,\n            firstItem.paes_dm_magliano\n        ]\n        .filter(item => item && item.trim() !== '' && item !== null && item !== undefined)\n        .join(', ');\n        \n        const vincoloIdrogeologico = firstItem.vincolo_idrogeologico && firstItem.vincolo_idrogeologico.trim() !== '' ? firstItem.vincolo_idrogeologico : '';\n        \n        // Controlla se ci sono vincoli presenti\n        if (vincoliPaesaggistici.length > 0 || vincoloIdrogeologico.length > 0) {\n            messaggioVincoli = `sono presenti i seguenti vincoli paesaggistici: Vincoli Paesaggistici: ${vincoliPaesaggistici} Vincolo Idrogeologico: ${vincoloIdrogeologico}`; \n        } else {\n            // Record esistente ma senza vincoli\n            messaggioVincoli = `per il foglio catastale ${foglio} e il mappale ${mappale} non sono stati trovati vincoli paesaggistici né idrogeologici.`;\n        }\n    }\n}\n\nreturn [{\n  json: {\n    messaggio_vincoli: messaggioVincoli,\n    foglio: foglio,\n    mappale: mappale,\n    records_found: inputData.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        688
+      ],
+      "id": "0e684a82-a27d-4ce1-9636-fb8a8eca5c29",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "content": "## Controllo presenza vincoli su terreni",
+        "height": 496,
+        "width": 2112,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "5350ad9d-3b09-43da-92a4-72b639edf38b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "output": "raw",
+        "filters": {
+          "readStatus": "unread"
+        },
+        "options": {
+          "attachmentsPrefix": "data",
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        688,
+        688
+      ],
+      "id": "5565afe2-5f7a-4824-8029-4bf6663cccd4",
+      "name": "Microsoft Outlook Trigger1",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qeRkH8ioImf9F7IY",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Microsoft Outlook Trigger1').item.json.id }}",
+          "mode": "id"
+        },
+        "message": "={{ $json.email_html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        688
+      ],
+      "id": "063b17b5-603d-4463-aac5-e353c50ad66c",
+      "name": "Reply to a message1",
+      "webhookId": "0a1cc969-ca91-4112-9494-0eada40073d6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qeRkH8ioImf9F7IY",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0e4068f-0da0-4a38-b3dc-05d4cc8862fb",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Verifica vincoli",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        688
+      ],
+      "id": "4ddfa9b8-a7e7-48ff-9bba-7bdb04f7ec0a",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1984,
+        1408
+      ],
+      "id": "1cf0bd2e-e054-4a33-8c8b-d684ea4e5408",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt_ai }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        1200
+      ],
+      "id": "b8ee3b19-6d7c-4cb3-96a8-4458b589e1d9",
+      "name": "Informazioni generali"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=settore_tecnico_uffici",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        2160,
+        1392
+      ],
+      "id": "069faa83-9233-4b3a-aa70-91d9610e3b00",
+      "name": "PostgreSQL1",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Informazioni sugli uffici (apertura, personale assegnato, attività, ecc..)",
+        "height": 464,
+        "width": 2112,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        1088
+      ],
+      "typeVersion": 1,
+      "id": "aeacf4fc-6e06-4d13-9d58-21d27623d179",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE protocollo_counter\nSET ultimo_numero = ultimo_numero + 1\nWHERE anno = EXTRACT(YEAR FROM CURRENT_DATE)\nRETURNING ultimo_numero;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1536,
+        1200
+      ],
+      "id": "bfb61813-e4f8-4c06-a868-bb400d8fe0f5",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        1360
+      ],
+      "id": "0c48778b-3882-48cd-a7bb-258722a51d2a",
+      "name": "Ollama Chat Model2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=settore_tecnico_uffici",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        1344
+      ],
+      "id": "d0631bde-804a-4533-8bb0-a80b34987b11",
+      "name": "PostgreSQL",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un assistente virtuale del **Settore Tecnico del Comune di Magliano in Toscana**.  \nIl tuo compito è indirizzare cittadini e professionisti verso l’ufficio o i dipendenti **competenti**.\n\n### Istruzioni operative\n- Rispondi in modo **conciso**.  \n- Usa **solo ed esclusivamente** i dati presenti in **PostgreSQL**.  \n- Identifica i dipendenti competenti consultando **PostgreSQL**\n- Non inventare, non aggiungere, non interpretare informazioni che non siano presenti nel database.  \n- Non riportare i dati degli uffici che non sono competenti.\n\n### Schema risposta:\nBuongiorno,\nla sua richiesta di informazioni può essere indirizzata al dipendente **Nome Dipend\nente**, assegnato all'ufficio **Nome ufficio** che può essere contattato alla mail **mail ufficio**.  \n\n\n### Oggetto della domanda\n{{ $json.output['oggetto della domanda'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        1200
+      ],
+      "id": "445cd285-5a42-4a93-87d9-a97377d43686",
+      "name": "Classificatore competenze"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE protocollo_counter\nSET ultimo_numero = ultimo_numero + 1\nWHERE anno = EXTRACT(YEAR FROM CURRENT_DATE)\nRETURNING ultimo_numero;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1680,
+        1200
+      ],
+      "id": "4cd62208-7b3f-4ec1-927a-c245d0d7a934",
+      "name": "Assegnazione protocollo2",
+      "credentials": {
+        "postgres": {
+          "id": "LCpZD9DBViVjwmM6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "=leggi {{ $json.bodyPreview }} e riassumi l'oggetto della domanda",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "oggetto della domanda",
+              "description": "oggetto della domanda"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        1200
+      ],
+      "id": "5d9da646-535e-4d7b-9eb6-1275f2c03c84",
+      "name": "Information Extractor3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        1360
+      ],
+      "id": "f6e22f69-7f98-48e0-b34f-53e3c37d7f3a",
+      "name": "Ollama Model4",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8OMWvqHyP2rNSFWy",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "output": "raw",
+        "filters": {
+          "readStatus": "unread"
+        },
+        "options": {
+          "attachmentsPrefix": "data",
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        608,
+        1200
+      ],
+      "id": "c5b475ad-a986-4b1e-8084-37c5ae3aeca0",
+      "name": "Microsoft Outlook Trigger2",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qeRkH8ioImf9F7IY",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0e4068f-0da0-4a38-b3dc-05d4cc8862fb",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Richiesta info",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        1200
+      ],
+      "id": "a5e69844-43b4-4822-a747-5d65c6fd30b3",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Microsoft Outlook Trigger2').item.json.id }}",
+          "mode": "id"
+        },
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        1200
+      ],
+      "id": "1200040b-d52d-4c0a-9c4a-78f7122bbf0a",
+      "name": "Reply to a message2",
+      "webhookId": "0a1cc969-ca91-4112-9494-0eada40073d6",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "qeRkH8ioImf9F7IY",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nodo Formattazione Prompt - Assistente Settore Tecnico CORRETTO\n\n// Leggi i dati dai nodi precedenti\nconst competenze = $('Classificatore competenze').item.json.output;\nconst oggettoDomanda = $('Information Extractor3').item.json.output['oggetto della domanda'];\n\n// Controllo di sicurezza\nif (!competenze || !oggettoDomanda) {\n  return [{\n    json: {\n      error: 'Dati mancanti per la formattazione del prompt AI.'\n    }\n  }];\n}\n\n// Funzione che genera il prompt formattato\nfunction formatPrompt(competenze, oggettoDomanda) {\n  return `\nSei un assistente virtuale del **Settore Tecnico del Comune di Magliano in Toscana**.  \nIl tuo compito è indirizzare cittadini e professionisti verso l’ufficio o i dipendenti **competenti**.\n\n### Istruzioni operative\n- Rispondi in modo **conciso**.  \n- Usa **solo ed esclusivamente** i dati presenti in **PostgreSQL1**.  \n- Identifica i dipendenti competenti consultando:  \n${competenze}  \n- Non inventare, non aggiungere, non interpretare informazioni che non siano presenti nel database.  \n- Non riportare i dati degli uffici che non sono competenti.  \n\n### Oggetto della domanda\n${oggettoDomanda}\n  `;\n}\n\n// Genera il prompt finale\nconst promptFinale = formatPrompt(competenze, oggettoDomanda);\n\n// Restituisci l'output\nreturn [{\n  json: {\n    prompt_ai: promptFinale,\n    competenze_usate: competenze,\n    oggetto: oggettoDomanda\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        1200
+      ],
+      "id": "edbdd4a2-11ba-4fe9-8637-f0bd0622e6a3",
+      "name": "Code1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Verifica atto": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estrattore di informazioni1": {
+      "main": [
+        [
+          {
+            "node": "Verifica atto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-OSS:20b2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Estrattore di informazioni1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-OSS:20b3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Verifica atto",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estrazione file1": {
+      "main": [
+        [
+          {
+            "node": "Estrattore di informazioni1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Estrazione file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formattazione1": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vincoli paesaggistici1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor1": {
+      "main": [
+        [
+          {
+            "node": "Assegnazione protocollo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assegnazione protocollo1": {
+      "main": [
+        [
+          {
+            "node": "Salva in Database2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Formattazione1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook Trigger1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva in Database2": {
+      "main": [
+        [
+          {
+            "node": "Vincoli paesaggistici1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to a message1": {
+      "main": [
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Informazioni generali",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Informazioni generali": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Informazioni generali",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Assegnazione protocollo2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classificatore competenze",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL": {
+      "ai_tool": [
+        [
+          {
+            "node": "Classificatore competenze",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classificatore competenze": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assegnazione protocollo2": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor3": {
+      "main": [
+        [
+          {
+            "node": "Classificatore competenze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook Trigger2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Informazioni generali",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c7c25d9b-5381-431d-8d62-42d34d2d669d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17a62beb685cc8811ecccfdb526b06b45c844927e932786974e7e038d3390ffd"
+  },
+  "id": "ZswidgMGcR9a1wQl",
+  "tags": []
+}
