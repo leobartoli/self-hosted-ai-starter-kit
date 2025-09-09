@@ -5,6 +5,7 @@ volumes:
   qdrant_storage:
   shared_storage:
   meilisearch_data:
+  homeassistant_config:
 
 networks:
   demo:
@@ -83,6 +84,28 @@ services:
       timeout: 5s
       retries: 10
 
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    hostname: homeassistant
+    container_name: homeassistant
+    networks: ['demo']
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - 8123:8123
+    volumes:
+      - homeassistant_config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - TZ=${TZ:-Europe/Rome}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
   n8n-import:
     <<: *service-n8n
     hostname: n8n-import
@@ -119,6 +142,8 @@ services:
         condition: service_healthy
       meilisearch:
         condition: service_started
+      homeassistant:
+        condition: service_healthy
 
   qdrant:
     image: qdrant/qdrant
